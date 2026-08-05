@@ -8,7 +8,7 @@ export default defineConfig({
     open: false,
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        target: "https://apsi-cg.fred-bialard.workers.dev",
         changeOrigin: true,
       },
     },

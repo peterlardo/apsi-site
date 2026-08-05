@@ -24,7 +24,19 @@ import consentsRouter from "./consents.js";
 
 const app = new Hono();
 
-app.use("*", cors({ origin: "*", credentials: true }));
+const allowedOrigins = [
+  process.env.CORS_ORIGIN || "https://apsi-cg.pages.dev",
+  "http://localhost:5173",
+  "http://localhost:8788",
+];
+
+app.use("*", cors({
+  origin: (origin) => {
+    if (!origin || allowedOrigins.includes(origin)) return origin || "*";
+    return allowedOrigins[0];
+  },
+  credentials: true,
+}));
 
 app.get("/api/health", (c) => c.json({ ok: true, ts: Date.now() }));
 

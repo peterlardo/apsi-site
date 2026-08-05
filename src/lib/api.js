@@ -1,3 +1,5 @@
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 let accessToken = null;
 
 const listeners = new Set();
@@ -27,7 +29,7 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path, { method = "GET", body, auth = true, retried = false } = {}) {
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}/api${path}`, {
     method,
     credentials: "include",
     headers: {
@@ -163,7 +165,7 @@ export function deleteDocument(id) {
   return apiFetch(`/documents/${id}`, { method: "DELETE" });
 }
 export async function uploadDocument(formData) {
-  const res = await fetch("/api/documents", {
+  const res = await fetch(`${API_BASE}/api/documents`, {
     method: "POST",
     credentials: "include",
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
@@ -215,7 +217,7 @@ export const updateInvoice = (id, data) =>
 export const deleteInvoice = (id) => apiFetch(`/invoices/${id}`, { method: "DELETE" });
 
 async function tryRefresh() {
-  const res = await fetch("/api/auth/refresh", {
+  const res = await fetch(`${API_BASE}/api/auth/refresh`, {
     method: "POST",
     credentials: "include",
   });

@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Loader2,
   LogOut,
+  Mail,
   Menu,
   Network,
   Receipt,
@@ -51,6 +52,7 @@ const NAV = [
       { id: "membres", label: "Gestion des membres", icon: UserPlus, to: "/admin/membres" },
       { id: "cotisations", label: "Cotisations", icon: Wallet, to: "/admin/cotisations" },
       { id: "facturation", label: "Facturation", icon: Receipt, to: "/admin/facturation" },
+      { id: "newsletter", label: "Newsletter", icon: Mail, to: "/admin/newsletter" },
     ],
   },
 ];

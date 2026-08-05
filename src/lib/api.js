@@ -79,7 +79,13 @@ export const newsletterApi = {
   check: (email) => apiFetch(`/newsletter/check/${encodeURIComponent(email)}`, { auth: false }),
   unsubscribe: (email) =>
     apiFetch(`/newsletter/unsubscribe/${encodeURIComponent(email)}`, { method: "DELETE", auth: false }),
+  count: () => apiFetch("/newsletter/count", { auth: false }),
 };
+
+export const getNewsletterSubscribers = () => apiFetch("/newsletter");
+export const getNewsletterStats = () => apiFetch("/newsletter/stats");
+export const deleteNewsletterSubscriber = (id) =>
+  apiFetch(`/newsletter/admin/${id}`, { method: "DELETE" });
 
 export async function getContentAdmin() {
   return apiFetch("/content/admin");

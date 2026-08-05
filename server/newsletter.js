@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { requireAuth } from "./middleware.js";
-import { sendNewsletterEmail } from "./email.js";
+import { sendNewsletterEmail, sendWelcomeNewsletterEmail } from "./email.js";
 
 const newsletter = new Hono();
 
@@ -21,6 +21,13 @@ newsletter.get("/check/:email", async (c) => {
   return c.json({ subscribed: row || null });
 });
 
+newsletter.get("/count", async (c) => {
+  const row = await c.env.DB.prepare(
+    "SELECT COUNT(*) AS count FROM newsletter_subscribers WHERE unsubscribed_at IS NULL"
+  ).first();
+  return c.json({ count: row?.count || 0 });
+});
+
 newsletter.post("/", async (c) => {
   const b = await c.req.json();
   const email = String(b.email || "").trim().toLowerCase();
@@ -32,6 +39,7 @@ newsletter.post("/", async (c) => {
      ON CONFLICT(email) DO UPDATE SET consent_newsletter = 1, unsubscribed_at = NULL`
   ).bind(email, b.consent_source || "site", getIp(c)).run();
   try { await sendNewsletterEmail(c.env, { email, source: b.consent_source || "site" }); } catch {}
+  try { await sendWelcomeNewsletterEmail(c.env, { email }); } catch {}
   return c.json({ ok: true, email }, 201);
 });
 
@@ -46,9 +54,43 @@ newsletter.delete("/unsubscribe/:email", async (c) => {
 
 newsletter.get("/", requireAuth, async (c) => {
   const { results } = await c.env.DB.prepare(
-    "SELECT id, email, consent_source, ip, subscribed_at, unsubscribed_at FROM newsletter_subscribers ORDER BY subscribed_at DESC"
+    "SELECT id, email, consent_newsletter, consent_source, ip, subscribed_at, unsubscribed_at FROM newsletter_subscribers ORDER BY subscribed_at DESC"
   ).all();
   return c.json(results);
+});
+
+newsletter.get("/stats", requireAuth, async (c) => {
+  const total = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM newsletter_subscribers").first();
+  const active = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM newsletter_subscribers WHERE unsubscribed_at IS NULL").first();
+  const unsubscribed = await c.env.DB.prepare("SELECT COUNT(*) AS n FROM newsletter_subscribers WHERE unsubscribed_at IS NOT NULL").first();
+  const thisMonth = await c.env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM newsletter_subscribers WHERE subscribed_at >= date('now', 'start of month')"
+  ).first();
+  const lastMonth = await c.env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM newsletter_subscribers WHERE subscribed_at >= date('now', 'start of month', '-1 month') AND subscribed_at < date('now', 'start of month')"
+  ).first();
+  const bySource = await c.env.DB.prepare(
+    "SELECT consent_source, COUNT(*) AS n FROM newsletter_subscribers WHERE unsubscribed_at IS NULL GROUP BY consent_source"
+  ).all();
+  const byMonth = await c.env.DB.prepare(
+    "SELECT strftime('%Y-%m', subscribed_at) AS month, COUNT(*) AS n FROM newsletter_subscribers WHERE unsubscribed_at IS NULL GROUP BY month ORDER BY month DESC LIMIT 12"
+  ).all();
+  return c.json({
+    total: total?.n || 0,
+    active: active?.n || 0,
+    unsubscribed: unsubscribed?.n || 0,
+    thisMonth: thisMonth?.n || 0,
+    lastMonth: lastMonth?.n || 0,
+    bySource: bySource?.results || [],
+    byMonth: byMonth?.results || [],
+  });
+});
+
+newsletter.delete("/admin/:id", requireAuth, async (c) => {
+  await c.env.DB.prepare("DELETE FROM newsletter_subscribers WHERE id = ?")
+    .bind(Number(c.req.param("id")))
+    .run();
+  return c.body(null, { status: 204 });
 });
 
 export default newsletter;

@@ -71,6 +71,38 @@ export async function sendNewsletterEmail(env, { email, source }) {
   });
 }
 
+export async function sendWelcomeNewsletterEmail(env, { email }) {
+  const siteUrl = env.SITE_URL || "https://apsi-cg.pages.dev";
+  return sendEmail(env, {
+    to: email,
+    subject: "Bienvenue dans la newsletter APSI-CG",
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <div style="text-align:center;padding:24px 0;">
+          <div style="display:inline-block;background:#0d9488;color:#fff;font-size:20px;font-weight:700;padding:12px 24px;border-radius:8px;">APSI-CG</div>
+        </div>
+        <h2 style="color:#1e293b;text-align:center;">Bienvenue !</h2>
+        <p style="color:#475569;line-height:1.6;">Bonjour,</p>
+        <p style="color:#475569;line-height:1.6;">Merci pour votre inscription à la newsletter de l'<strong>APSI-CG</strong> (Association des Professionnels de la Sécurité de l'Information du Congo).</p>
+        <p style="color:#475569;line-height:1.6;">Vous recevrez désormais nos dernières actualités, analyses et alertes en cybersécurité directement dans votre boîte mail.</p>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:24px 0;">
+          <p style="margin:0;color:#166534;font-size:14px;line-height:1.5;">
+            <strong>Votre inscription est bien confirmée.</strong> Aucune action supplémentaire n'est requise.
+          </p>
+        </div>
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${siteUrl}" style="display:inline-block;background:#0d9488;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:16px;">Découvrir notre site</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0;" />
+        <p style="color:#94a3b8;font-size:12px;text-align:center;">
+          APSI-CG — Association des Professionnels de la Sécurité de l'Information du Congo<br/>
+          <a href="${siteUrl}/politique-confidentialite" style="color:#94a3b8;">Politique de confidentialité</a> · <a href="${siteUrl}/newsletter/unsubscribe?email=${encodeURIComponent(email)}" style="color:#94a3b8;">Se désinscrire</a>
+        </p>
+      </div>
+    `,
+  });
+}
+
 export async function sendTrainingRegistrationEmail(env, { fullName, email, phone, organization, profile, trainingTitle, notes }) {
   return sendEmail(env, {
     to: TO,

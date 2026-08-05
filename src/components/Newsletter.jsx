@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Send } from "lucide-react";
 import Reveal from "./Reveal";
 import { newsletterApi } from "../lib/api";
@@ -9,6 +9,11 @@ export default function Newsletter() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    newsletterApi.count().then((d) => { if (d?.count) setCount(d.count); }).catch(() => {});
+  }, []);
 
   const submit = (e) => {
     e.preventDefault();
@@ -22,7 +27,8 @@ export default function Newsletter() {
         setSent(true);
         setEmail("");
         setConsent(false);
-        setTimeout(() => setSent(false), 4000);
+        setCount((c) => c + 1);
+        setTimeout(() => setSent(false), 6000);
       })
       .catch((err) => setError(err.message || "Inscription impossible pour le moment."))
       .finally(() => setSubmitting(false));
@@ -63,9 +69,9 @@ export default function Newsletter() {
                 <a href="/politique-confidentialite" className="consent-link">Confidentialité</a>
               </span>
             </label>
-            {sent && <p className="newsletter-note" style={{ color: "var(--lime-400)" }}>Merci ! Votre inscription a bien été prise en compte.</p>}
+            {sent && <p className="newsletter-note" style={{ color: "var(--lime-400)" }}>Merci ! Un e-mail de confirmation vous a été envoyé.</p>}
             {error && <p className="newsletter-note" style={{ color: "#fca5a5" }}>{error}</p>}
-            <p className="newsletter-note">Rejoignez 2 000+ abonnés — désinscription en un clic.</p>
+            <p className="newsletter-note">Rejoignez {count > 0 ? `${count}+` : ""} abonnés — désinscription en un clic.</p>
           </form>
         </Reveal>
       </div>

@@ -5,6 +5,7 @@ import {
   FilePenLine,
   GraduationCap,
   LayoutDashboard,
+  Mail,
   Network,
   Newspaper,
   Receipt,
@@ -20,6 +21,7 @@ import Blog from "./Blog";
 import Categories from "./Categories";
 import Events from "./Events";
 import Downloads from "./Downloads";
+import NewsletterAdmin from "./NewsletterAdmin";
 import FormationsAdmin from "./Formations";
 import Membres from "./Membres";
 import Cotisations from "./Cotisations";
@@ -70,6 +72,13 @@ export const adminModules = [
     icon: Download,
     path: "downloads",
     element: <Downloads />,
+  },
+  {
+    id: "newsletter",
+    label: "Newsletter",
+    icon: Mail,
+    path: "newsletter",
+    element: <NewsletterAdmin />,
   },
   {
     id: "formations",

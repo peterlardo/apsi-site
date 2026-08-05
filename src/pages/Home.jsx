@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   Star, Phone, ArrowRight, Check, Award,
   ArrowUpRight, Users, Headset, CheckCircle2, ShieldCheck,
-  ChevronDown, ChevronUp, Download,
+  ChevronDown, ChevronUp,
 } from "lucide-react";
 import Reveal from "../components/Reveal";
 import SectionHead from "../components/SectionHead";
@@ -59,7 +59,7 @@ export default function Home() {
   const [servicesOpen, setServicesOpen] = useState(false);
       const {
     content: {
-      COMPANY, FEATURES, SERVICES, PROJECTS, PROCESS, BRANDS, BLOG_POSTS, DOWNLOADS, IMAGES, HERO_SLIDES,
+      COMPANY, FEATURES, SERVICES, PROJECTS, PROCESS, BRANDS, BLOG_POSTS, IMAGES, HERO_SLIDES,
     },
   } = useContent();
   return (
@@ -303,43 +303,6 @@ export default function Home() {
               ))}
             </div>
           </Reveal>
-        </div>
-      </section>
-
-      {/* ===== TELECHARGEMENTS ===== */}
-      <section className="section">
-        <div className="container">
-          <SectionHead
-            row
-            tag="Ressources"
-            title={<strong>Téléchargez nos documents</strong>}
-            action={
-              <Btn to="/telechargements" className="btn--outline" small>Voir tous les documents</Btn>
-            }
-          />
-          <div className="dl-home-grid">
-            {(DOWNLOADS || []).slice(0, 3).map((d, i) => (
-              <Reveal key={i} delay={i * 100}>
-                <div className="dl-card">
-                  <div className="dl-card-icon">
-                    <d.icon size={28} strokeWidth={1.8} />
-                  </div>
-                  <div className="dl-card-body">
-                    <span className="dl-card-cat">{d.category}</span>
-                    <h3>{d.title}</h3>
-                    <p>{d.description}</p>
-                  </div>
-                  <div className="dl-card-foot">
-                    <span className="dl-card-size">{d.fileSize}</span>
-                    <a href={d.fileUrl} className="btn btn--sm" download>
-                      <span className="btn-inner">Télécharger</span>
-                      <span className="btn-arrow"><Download size={15} /></span>
-                    </a>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
 

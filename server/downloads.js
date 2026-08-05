@@ -10,6 +10,14 @@ downloads.get("/", async (c) => {
   return c.json(results);
 });
 
+downloads.get("/:id", async (c) => {
+  const row = await c.env.DB.prepare(
+    "SELECT id, title, description, category, file_name, file_size, mime_type, created_at FROM download_files WHERE id = ?"
+  ).bind(c.req.param("id")).first();
+  if (!row) return c.json({ error: "Fichier introuvable" }, 404);
+  return c.json(row);
+});
+
 downloads.get("/:id/file", async (c) => {
   const row = await c.env.DB.prepare(
     "SELECT file_data, file_name, mime_type FROM download_files WHERE id = ?"
@@ -33,7 +41,10 @@ downloads.post("/", requireAuth, async (c) => {
   if (!file || typeof file === "string") return c.json({ error: "Aucun fichier fourni" }, 400);
   if (!title) return c.json({ error: "Le titre est requis" }, 400);
   const arrayBuf = await file.arrayBuffer();
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuf)));
+  const bytes = new Uint8Array(arrayBuf);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  const base64 = btoa(binary);
   const { meta } = await c.env.DB.prepare(
     "INSERT INTO download_files (title, description, category, file_name, file_size, mime_type, file_data) VALUES (?, ?, ?, ?, ?, ?, ?)"
   ).bind(title, description || null, category || "autre", file.name, file.size, file.type, base64).run();

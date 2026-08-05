@@ -155,7 +155,7 @@ export async function downloadFileBlob(id) {
 
 export async function createDownload(formData) {
   const base = import.meta.env.VITE_API_URL || "";
-  const token = localStorage.getItem("apsi_access_token");
+  const token = getAccessToken();
   const res = await fetch(`${base}/api/downloads`, {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : {},

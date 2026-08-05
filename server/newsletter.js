@@ -1,80 +1,52 @@
-import { Router } from "express";
-import { pool } from "./db.js";
+import { Hono } from "hono";
 import { requireAuth } from "./middleware.js";
 
-const router = Router();
+const newsletter = new Hono();
 
-function getIp(req) {
-  return (
-    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-    req.socket?.remoteAddress ||
-    null
-  );
+function getIp(c) {
+  return c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || null;
 }
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
 }
 
-router.get("/check/:email", async (req, res, next) => {
-  try {
-    const email = String(req.params.email || "").trim().toLowerCase();
-    if (!isValidEmail(email)) return res.status(400).json({ error: "E-mail invalide" });
-    const [rows] = await pool.execute(
-      "SELECT id, email, consent_newsletter, subscribed_at, unsubscribed_at FROM newsletter_subscribers WHERE email = ?",
-      [email]
-    );
-    res.json({ subscribed: rows[0] ? rows[0] : null });
-  } catch (err) {
-    next(err);
-  }
+newsletter.get("/check/:email", async (c) => {
+  const email = c.req.param("email").trim().toLowerCase();
+  if (!isValidEmail(email)) return c.json({ error: "E-mail invalide" }, 400);
+  const row = await c.env.DB.prepare(
+    "SELECT id, email, consent_newsletter, subscribed_at, unsubscribed_at FROM newsletter_subscribers WHERE email = ?"
+  ).bind(email).first();
+  return c.json({ subscribed: row || null });
 });
 
-router.post("/", async (req, res, next) => {
-  try {
-    const b = req.body || {};
-    const email = String(b.email || "").trim().toLowerCase();
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ error: "Une adresse e-mail valide est requise." });
-    }
-    if (!b.consent_newsletter) {
-      return res.status(400).json({ error: "Le consentement à recevoir la newsletter est obligatoire (RGPD)." });
-    }
-    await pool.execute(
-      `INSERT INTO newsletter_subscribers (email, consent_newsletter, consent_source, ip)
-       VALUES (?, 1, ?, ?)
-       ON DUPLICATE KEY UPDATE consent_newsletter = 1, unsubscribed_at = NULL`,
-      [email, b.consent_source || "site", getIp(req)]
-    );
-    res.status(201).json({ ok: true, email });
-  } catch (err) {
-    next(err);
-  }
+newsletter.post("/", async (c) => {
+  const b = await c.req.json();
+  const email = String(b.email || "").trim().toLowerCase();
+  if (!isValidEmail(email)) return c.json({ error: "Une adresse e-mail valide est requise." }, 400);
+  if (!b.consent_newsletter) return c.json({ error: "Le consentement à recevoir la newsletter est obligatoire (RGPD)." }, 400);
+  await c.env.DB.prepare(
+    `INSERT INTO newsletter_subscribers (email, consent_newsletter, consent_source, ip)
+     VALUES (?, 1, ?, ?)
+     ON CONFLICT(email) DO UPDATE SET consent_newsletter = 1, unsubscribed_at = NULL`
+  ).bind(email, b.consent_source || "site", getIp(c)).run();
+  return c.json({ ok: true, email }, 201);
 });
 
-router.delete("/unsubscribe/:email", async (req, res, next) => {
-  try {
-    const email = String(req.params.email || "").trim().toLowerCase();
-    if (!isValidEmail(email)) return res.status(400).json({ error: "E-mail invalide" });
-    const [r] = await pool.execute(
-      "UPDATE newsletter_subscribers SET unsubscribed_at = NOW(), consent_newsletter = 0 WHERE email = ? AND unsubscribed_at IS NULL",
-      [email]
-    );
-    res.json({ unsubscribed: r.affectedRows > 0, email });
-  } catch (err) {
-    next(err);
-  }
+newsletter.delete("/unsubscribe/:email", async (c) => {
+  const email = c.req.param("email").trim().toLowerCase();
+  if (!isValidEmail(email)) return c.json({ error: "E-mail invalide" }, 400);
+  const { meta } = await c.env.DB.prepare(
+    "UPDATE newsletter_subscribers SET unsubscribed_at = datetime('now'), consent_newsletter = 0 WHERE email = ? AND unsubscribed_at IS NULL"
+  ).bind(email).run();
+  return c.json({ unsubscribed: meta.changes > 0, email });
 });
 
-router.get("/", requireAuth, async (req, res, next) => {
-  try {
-    const [rows] = await pool.execute(
-      "SELECT id, email, consent_source, ip, subscribed_at, unsubscribed_at FROM newsletter_subscribers ORDER BY subscribed_at DESC"
-    );
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
+newsletter.get("/", requireAuth, async (c) => {
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, email, consent_source, ip, subscribed_at, unsubscribed_at FROM newsletter_subscribers ORDER BY subscribed_at DESC"
+  ).all();
+  return c.json(results);
 });
 
-export default router;
+export default newsletter;

@@ -1,11 +1,15 @@
-import "dotenv/config";
-import express from "express";
-import helmet from "helmet";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { getCookie, setCookie, deleteCookie } from "hono/cookie";
+import bcrypt from "bcryptjs";
+import {
+  createRefreshToken,
+  rotateRefreshToken,
+  revokeRefreshToken,
+  signAccessToken,
+} from "./tokens.js";
+import { requireAuth } from "./middleware.js";
+
 import authRouter from "./auth.js";
 import contentRouter from "./content.js";
 import membersRouter from "./members.js";
@@ -17,57 +21,30 @@ import trainingsRouter from "./trainings.js";
 import contactRouter from "./contact.js";
 import newsletterRouter from "./newsletter.js";
 import consentsRouter from "./consents.js";
-import { initDb } from "./db.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = process.env.PORT || 3001;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+const app = new Hono();
 
-const app = express();
-app.set("trust proxy", 1);
+app.use("*", cors({ origin: "*", credentials: true }));
 
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
-app.use(express.json({ limit: "2mb" }));
-app.use(cookieParser());
+app.get("/api/health", (c) => c.json({ ok: true, ts: Date.now() }));
 
-app.use("/api/auth", authRouter);
-app.use("/api/content", contentRouter);
-app.use("/api/members", membersRouter);
-app.use("/api/cotisations", cotisationsRouter);
-app.use("/api/documents", documentsRouter);
-app.use("/api/projects", projectsRouter);
-app.use("/api/invoices", invoicesRouter);
-app.use("/api/trainings", trainingsRouter);
-app.use("/api/contact", contactRouter);
-app.use("/api/newsletter", newsletterRouter);
-app.use("/api/consents", consentsRouter);
-app.get("/api/health", (req, res) => res.json({ ok: true, ts: Date.now() }));
+app.route("/api/auth", authRouter);
+app.route("/api/content", contentRouter);
+app.route("/api/members", membersRouter);
+app.route("/api/cotisations", cotisationsRouter);
+app.route("/api/documents", documentsRouter);
+app.route("/api/projects", projectsRouter);
+app.route("/api/invoices", invoicesRouter);
+app.route("/api/trainings", trainingsRouter);
+app.route("/api/contact", contactRouter);
+app.route("/api/newsletter", newsletterRouter);
+app.route("/api/consents", consentsRouter);
 
-const distDir = path.join(__dirname, "..", "dist");
-if (fs.existsSync(distDir)) {
-  app.use(express.static(distDir));
-  app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(distDir, "index.html"));
-  });
-}
+app.notFound((c) => c.json({ error: "Route introuvable" }, 404));
 
-app.use((req, res) => {
-  res.status(404).json({ error: "Route introuvable" });
-});
-
-app.use((err, req, res, next) => {
+app.onError((err, c) => {
   console.error(err);
-  res.status(500).json({ error: "Erreur interne du serveur" });
+  return c.json({ error: "Erreur interne du serveur" }, 500);
 });
 
-app.listen(PORT, async () => {
-  try {
-    await initDb();
-    console.log(`API APSI-CG démarrée sur http://localhost:${PORT} (${process.env.NODE_ENV || "development"})`);
-  } catch (err) {
-    console.error("Échec de l'initialisation de la base MySQL :", err.message);
-    process.exit(1);
-  }
-});
-
+export default app;

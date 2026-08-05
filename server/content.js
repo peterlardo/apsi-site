@@ -1,12 +1,7 @@
-import { Router } from "express";
-import { pool } from "./db.js";
+import { Hono } from "hono";
 import { requireAuth } from "./middleware.js";
 
-const router = Router();
-
-function isJsonData(data) {
-  return typeof data === "object" && data !== null && !Array.isArray(data);
-}
+const content = new Hono();
 
 function slugify(title) {
   return String(title || "")
@@ -18,130 +13,116 @@ function slugify(title) {
     .slice(0, 80) || "article";
 }
 
-router.get("/", async (req, res, next) => {
-  try {
-    const [sections] = await pool.execute("SELECT name, data FROM content_sections");
-    const [posts] = await pool.execute(
+content.get("/", async (c) => {
+  const db = c.env.DB;
+  const { results: sections } = await db
+    .prepare("SELECT name, data FROM content_sections")
+    .all();
+  const { results: posts } = await db
+    .prepare(
       "SELECT id, title, slug, date, category, excerpt, image FROM blog_posts WHERE published = 1 ORDER BY created_at DESC"
-    );
-    const content = {};
-    for (const s of sections) content[s.name] = s.data;
-    res.json({ content, blog: posts });
-  } catch (err) {
-    next(err);
+    )
+    .all();
+  const contentMap = {};
+  for (const s of sections) {
+    contentMap[s.name] = typeof s.data === "string" ? JSON.parse(s.data) : s.data;
   }
+  return c.json({ content: contentMap, blog: posts });
 });
 
-router.get("/admin", requireAuth, async (req, res, next) => {
-  try {
-    const [rows] = await pool.execute(
-      "SELECT id, name, updated_at, JSON_LENGTH(data) AS items FROM content_sections ORDER BY name"
-    );
-    res.json({ sections: rows });
-  } catch (err) {
-    next(err);
-  }
+content.get("/admin", requireAuth, async (c) => {
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, name, updated_at, json_array_length(data) AS items FROM content_sections ORDER BY name"
+  ).all();
+  return c.json({ sections: results });
 });
 
-router.put("/admin/:name", requireAuth, async (req, res, next) => {
-  try {
-    const name = String(req.params.name || "").toLowerCase().trim();
-    const { data } = req.body || {};
-    if (!name || !/^[a-z_]+$/.test(name)) {
-      return res.status(400).json({ error: "Nom de section invalide" });
-    }
-    if (!isJsonData(data) && !Array.isArray(data)) {
-      return res.status(400).json({ error: "data doit être un objet ou un tableau JSON" });
-    }
-    await pool.execute(
-      `INSERT INTO content_sections (name, data, updated_by) VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE data = VALUES(data), updated_by = VALUES(updated_by), updated_at = NOW()`,
-      [name, JSON.stringify(data), req.user.id]
-    );
-    res.json({ ok: true, name, updated_at: new Date().toISOString() });
-  } catch (err) {
-    next(err);
+content.put("/admin/:name", requireAuth, async (c) => {
+  const name = c.req.param("name").toLowerCase().trim();
+  const body = await c.req.json();
+  const { data } = body || {};
+  if (!name || !/^[a-z_]+$/.test(name)) {
+    return c.json({ error: "Nom de section invalide" }, 400);
   }
+  await c.env.DB.prepare(
+    `INSERT INTO content_sections (name, data, updated_by) VALUES (?, ?, ?)
+     ON CONFLICT(name) DO UPDATE SET data = excluded.data, updated_by = excluded.updated_by, updated_at = datetime('now')`
+  )
+    .bind(name, JSON.stringify(data), c.get("user").id)
+    .run();
+  return c.json({ ok: true, name, updated_at: new Date().toISOString() });
 });
 
-router.get("/admin/blog", requireAuth, async (req, res, next) => {
-  try {
-    const [rows] = await pool.execute(
-      "SELECT id, title, slug, date, category, excerpt, image, published, created_at, updated_at FROM blog_posts ORDER BY created_at DESC"
-    );
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
+content.get("/admin/blog", requireAuth, async (c) => {
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, title, slug, date, category, excerpt, image, published, created_at, updated_at FROM blog_posts ORDER BY created_at DESC"
+  ).all();
+  return c.json(results);
 });
 
-router.post("/admin/blog", requireAuth, async (req, res, next) => {
-  try {
-    const b = req.body || {};
-    const title = String(b.title || "").trim();
-    if (!title) return res.status(400).json({ error: "Le titre est requis" });
-    const slug = slugify(b.slug || title);
-    const [existing] = await pool.execute("SELECT id FROM blog_posts WHERE slug = ?", [slug]);
-    if (existing[0]) return res.status(409).json({ error: "Ce slug existe déjà" });
-    const [result] = await pool.execute(
-      `INSERT INTO blog_posts (title, slug, date, category, excerpt, image, body, published)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        title,
-        slug,
-        String(b.date || ""),
-        String(b.category || ""),
-        String(b.excerpt || ""),
-        String(b.image || ""),
-        String(b.body || ""),
-        b.published ? 1 : 0,
-      ]
-    );
-    res.status(201).json({ ok: true, id: result.insertId });
-  } catch (err) {
-    next(err);
-  }
+content.post("/admin/blog", requireAuth, async (c) => {
+  const b = await c.req.json();
+  const title = String(b.title || "").trim();
+  if (!title) return c.json({ error: "Le titre est requis" }, 400);
+  const slug = slugify(b.slug || title);
+  const existing = await c.env.DB.prepare("SELECT id FROM blog_posts WHERE slug = ?")
+    .bind(slug)
+    .first();
+  if (existing) return c.json({ error: "Ce slug existe déjà" }, 409);
+  const { meta } = await c.env.DB.prepare(
+    `INSERT INTO blog_posts (title, slug, date, category, excerpt, image, body, published)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  )
+    .bind(
+      title,
+      slug,
+      String(b.date || ""),
+      String(b.category || ""),
+      String(b.excerpt || ""),
+      String(b.image || ""),
+      String(b.body || ""),
+      b.published ? 1 : 0
+    )
+    .run();
+  return c.json({ ok: true, id: meta.last_row_id }, 201);
 });
 
-router.put("/admin/blog/:id", requireAuth, async (req, res, next) => {
-  try {
-    const id = Number(req.params.id);
-    const b = req.body || {};
-    const title = String(b.title || "").trim();
-    if (!title) return res.status(400).json({ error: "Le titre est requis" });
-    const [existing] = await pool.execute(
-      "SELECT id, slug FROM blog_posts WHERE slug = ? AND id <> ?",
-      [slugify(b.slug || title), id]
-    );
-    if (existing[0]) return res.status(409).json({ error: "Ce slug existe déjà" });
-    await pool.execute(
-      `UPDATE blog_posts SET title = ?, slug = ?, date = ?, category = ?, excerpt = ?, image = ?, body = ?, published = ?, updated_at = NOW()
-       WHERE id = ?`,
-      [
-        title,
-        slugify(b.slug || title),
-        String(b.date || ""),
-        String(b.category || ""),
-        String(b.excerpt || ""),
-        String(b.image || ""),
-        String(b.body || ""),
-        b.published ? 1 : 0,
-        id,
-      ]
-    );
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
+content.put("/admin/blog/:id", requireAuth, async (c) => {
+  const id = Number(c.req.param("id"));
+  const b = await c.req.json();
+  const title = String(b.title || "").trim();
+  if (!title) return c.json({ error: "Le titre est requis" }, 400);
+  const slug = slugify(b.slug || title);
+  const existing = await c.env.DB.prepare(
+    "SELECT id FROM blog_posts WHERE slug = ? AND id <> ?"
+  )
+    .bind(slug, id)
+    .first();
+  if (existing) return c.json({ error: "Ce slug existe déjà" }, 409);
+  await c.env.DB.prepare(
+    `UPDATE blog_posts SET title = ?, slug = ?, date = ?, category = ?, excerpt = ?, image = ?, body = ?, published = ?, updated_at = datetime('now')
+     WHERE id = ?`
+  )
+    .bind(
+      title,
+      slug,
+      String(b.date || ""),
+      String(b.category || ""),
+      String(b.excerpt || ""),
+      String(b.image || ""),
+      String(b.body || ""),
+      b.published ? 1 : 0,
+      id
+    )
+    .run();
+  return c.json({ ok: true });
 });
 
-router.delete("/admin/blog/:id", requireAuth, async (req, res, next) => {
-  try {
-    await pool.execute("DELETE FROM blog_posts WHERE id = ?", [Number(req.params.id)]);
-    res.status(204).end();
-  } catch (err) {
-    next(err);
-  }
+content.delete("/admin/blog/:id", requireAuth, async (c) => {
+  await c.env.DB.prepare("DELETE FROM blog_posts WHERE id = ?")
+    .bind(Number(c.req.param("id")))
+    .run();
+  return c.body(null, { status: 204 });
 });
 
-export default router;
+export default content;

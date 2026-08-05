@@ -1,25 +1,20 @@
 import { verifyAccessToken } from "./tokens.js";
-import { pool } from "./db.js";
 
-export async function requireAuth(req, res, next) {
-  const header = req.headers.authorization || "";
+export async function requireAuth(c, next) {
+  const header = c.req.header("authorization") || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-  const payload = token ? verifyAccessToken(token) : null;
+  const payload = token ? await verifyAccessToken(token) : null;
   if (!payload) {
-    return res.status(401).json({ error: "Non authentifié" });
+    return c.json({ error: "Non authentifié" }, 401);
   }
-  try {
-    const [rows] = await pool.execute(
-      "SELECT id, email, name, role FROM users WHERE id = ? AND active = 1",
-      [payload.sub]
-    );
-    const user = rows[0];
-    if (!user) {
-      return res.status(401).json({ error: "Compte inactif ou supprimé" });
-    }
-    req.user = user;
-    next();
-  } catch (err) {
-    next(err);
+  const user = await c.env.DB.prepare(
+    "SELECT id, email, name, role FROM users WHERE id = ? AND active = 1"
+  )
+    .bind(payload.sub)
+    .first();
+  if (!user) {
+    return c.json({ error: "Compte inactif ou supprimé" }, 401);
   }
+  c.set("user", user);
+  await next();
 }

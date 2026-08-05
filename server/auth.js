@@ -1,7 +1,6 @@
-import { Router } from "express";
+import { Hono } from "hono";
+import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import bcrypt from "bcryptjs";
-import rateLimit from "express-rate-limit";
-import { pool } from "./db.js";
 import {
   createRefreshToken,
   rotateRefreshToken,
@@ -10,130 +9,120 @@ import {
 } from "./tokens.js";
 import { requireAuth } from "./middleware.js";
 
-export const REFRESH_COOKIE = "apsi_refresh";
-const IS_PROD = process.env.NODE_ENV === "production";
+const REFRESH_COOKIE = "apsi_refresh";
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Trop de tentatives. Réessayez dans 15 minutes." },
-});
+const auth = new Hono();
 
-const router = Router();
-
-function setRefreshCookie(res, token) {
-  res.cookie(REFRESH_COOKIE, token, {
+function setRefreshCookie(c, token) {
+  setCookie(c, REFRESH_COOKIE, token, {
     httpOnly: true,
-    secure: IS_PROD,
-    sameSite: "lax",
+    secure: true,
+    sameSite: "Lax",
     path: "/api/auth",
-    maxAge: 7 * 864e5,
+    maxAge: 7 * 86400,
   });
 }
 
-function clearRefreshCookie(res) {
-  res.clearCookie(REFRESH_COOKIE, { path: "/api/auth" });
+function clearRefreshCookie(c) {
+  deleteCookie(c, REFRESH_COOKIE, { path: "/api/auth" });
 }
 
 function publicUser(user) {
   return { id: user.id, email: user.email, name: user.name, role: user.role };
 }
 
-router.post("/login", loginLimiter, async (req, res, next) => {
-  try {
-    const { email, password } = req.body || {};
-    if (typeof email !== "string" || typeof password !== "string" || !email || !password) {
-      return res.status(400).json({ error: "Email et mot de passe requis" });
-    }
-    const [rows] = await pool.execute("SELECT * FROM users WHERE email = ?", [
-      email.trim().toLowerCase(),
-    ]);
-    const user = rows[0];
-    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-      return res.status(401).json({ error: "Email ou mot de passe incorrect" });
-    }
-    if (!user.active) {
-      return res.status(403).json({ error: "Compte désactivé" });
-    }
-    await pool.execute("UPDATE users SET updated_at = NOW() WHERE id = ?", [user.id]);
-    setRefreshCookie(res, await createRefreshToken(user));
-    res.json({ user: publicUser(user), accessToken: signAccessToken(user) });
-  } catch (err) {
-    next(err);
+auth.post("/login", async (c) => {
+  const body = await c.req.json();
+  const { email, password } = body || {};
+  if (!email || !password) {
+    return c.json({ error: "Email et mot de passe requis" }, 400);
   }
+  const user = await c.env.DB.prepare("SELECT * FROM users WHERE email = ?")
+    .bind(email.trim().toLowerCase())
+    .first();
+  if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+    return c.json({ error: "Email ou mot de passe incorrect" }, 401);
+  }
+  if (!user.active) {
+    return c.json({ error: "Compte désactivé" }, 403);
+  }
+  await c.env.DB.prepare("UPDATE users SET updated_at = datetime('now') WHERE id = ?")
+    .bind(user.id)
+    .run();
+  const refreshToken = await createRefreshToken(user, c.env.DB);
+  setRefreshCookie(c, refreshToken);
+  return c.json({
+    user: publicUser(user),
+    accessToken: await signAccessToken(user),
+  });
 });
 
-router.post("/refresh", async (req, res, next) => {
-  try {
-    const token = req.cookies?.[REFRESH_COOKIE];
-    if (!token) {
-      return res.status(401).json({ error: "Session expirée" });
-    }
-    const rotated = await rotateRefreshToken(token);
-    if (!rotated) {
-      clearRefreshCookie(res);
-      return res.status(401).json({ error: "Session expirée" });
-    }
-    setRefreshCookie(res, rotated.refreshToken);
-    res.json({
-      user: publicUser(rotated.user),
-      accessToken: signAccessToken(rotated.user),
-    });
-  } catch (err) {
-    next(err);
+auth.post("/refresh", async (c) => {
+  const token = getCookie(c, REFRESH_COOKIE);
+  if (!token) {
+    return c.json({ error: "Session expirée" }, 401);
   }
+  const rotated = await rotateRefreshToken(token, c.env.DB);
+  if (!rotated) {
+    clearRefreshCookie(c);
+    return c.json({ error: "Session expirée" }, 401);
+  }
+  setRefreshCookie(c, rotated.refreshToken);
+  return c.json({
+    user: publicUser(rotated.user),
+    accessToken: await signAccessToken(rotated.user),
+  });
 });
 
-router.post("/logout", async (req, res, next) => {
-  try {
-    const token = req.cookies?.[REFRESH_COOKIE];
-    if (token) {
-      const payload = token.split(".").length === 3 ? JSON.parse(
+auth.post("/logout", async (c) => {
+  const token = getCookie(c, REFRESH_COOKIE);
+  if (token) {
+    try {
+      const payload = JSON.parse(
         Buffer.from(token.split(".")[1], "base64url").toString()
-      ) : null;
-      if (payload?.jti) await revokeRefreshToken(payload.jti);
-    }
-    clearRefreshCookie(res);
-    res.status(204).end();
-  } catch (err) {
-    next(err);
+      );
+      if (payload?.jti) await revokeRefreshToken(payload.jti, c.env.DB);
+    } catch {}
   }
+  clearRefreshCookie(c);
+  return c.body(null, { status: 204 });
 });
 
-router.get("/me", requireAuth, (req, res) => {
-  res.json({ user: publicUser(req.user) });
+auth.get("/me", requireAuth, async (c) => {
+  return c.json({ user: publicUser(c.get("user")) });
 });
 
-router.post("/change-password", requireAuth, async (req, res, next) => {
-  try {
-    const { currentPassword, newPassword } = req.body || {};
-    if (typeof currentPassword !== "string" || typeof newPassword !== "string") {
-      return res.status(400).json({ error: "Champs requis" });
-    }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: "Le nouveau mot de passe doit contenir au moins 8 caractères" });
-    }
-    const [rows] = await pool.execute("SELECT * FROM users WHERE id = ?", [req.user.id]);
-    const user = rows[0];
-    if (!user || !(await bcrypt.compare(currentPassword, user.password_hash))) {
-      return res.status(400).json({ error: "Mot de passe actuel incorrect" });
-    }
-    const newHash = await bcrypt.hash(newPassword, 12);
-    await pool.execute("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?", [
-      newHash,
-      user.id,
-    ]);
-    await pool.execute(
-      "UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = ? AND revoked_at IS NULL",
-      [user.id]
+auth.post("/change-password", requireAuth, async (c) => {
+  const body = await c.req.json();
+  const { currentPassword, newPassword } = body || {};
+  if (!currentPassword || !newPassword) {
+    return c.json({ error: "Champs requis" }, 400);
+  }
+  if (newPassword.length < 8) {
+    return c.json(
+      { error: "Le nouveau mot de passe doit contenir au moins 8 caractères" },
+      400
     );
-    clearRefreshCookie(res);
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
   }
+  const user = await c.env.DB.prepare("SELECT * FROM users WHERE id = ?")
+    .bind(c.get("user").id)
+    .first();
+  if (!user || !(await bcrypt.compare(currentPassword, user.password_hash))) {
+    return c.json({ error: "Mot de passe actuel incorrect" }, 400);
+  }
+  const newHash = await bcrypt.hash(newPassword, 12);
+  await c.env.DB.prepare(
+    "UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?"
+  )
+    .bind(newHash, user.id)
+    .run();
+  await c.env.DB.prepare(
+    "UPDATE refresh_tokens SET revoked_at = datetime('now') WHERE user_id = ? AND revoked_at IS NULL"
+  )
+    .bind(user.id)
+    .run();
+  clearRefreshCookie(c);
+  return c.json({ ok: true });
 });
 
-export default router;
+export default auth;

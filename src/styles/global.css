@@ -1050,7 +1050,7 @@ h6 { font-size: 16px; font-weight: 500; }
 .faq-a p { padding: 0 26px 24px; font-size: 15px; color: var(--text); }
 
 /* ---------- Blog ---------- */
-.blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+.blog-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
 .blog-card { background: var(--white); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); transition: all 0.35s; }
 .blog-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-md); }
 .blog-thumb { aspect-ratio: 16/9.6; overflow: hidden; position: relative; background: var(--teal-800); }
@@ -1352,7 +1352,7 @@ h6 { font-size: 16px; font-weight: 500; }
   .dropdown a { color: var(--text); }
   .dropdown a:hover { background: rgba(255, 255, 255, 0.4); color: var(--teal-900); }
   .nav-cta .btn { display: none; }
-  .features-grid, .services-grid, .services-more.open, .projects-grid, .testi-grid, .blog-grid { grid-template-columns: 1fr; }
+  .features-grid, .services-grid, .services-more.open, .projects-grid, .testi-grid { grid-template-columns: 1fr; }
   .team-grid { grid-template-columns: minmax(0, 240px); }
   .brands-row { grid-template-columns: repeat(2, 1fr); }
   .stats-grid { flex-wrap: wrap; gap: 20px; }
@@ -1618,13 +1618,13 @@ h6 { font-size: 16px; font-weight: 500; }
 .act-pages button.active { background: var(--teal-900); color: var(--white); border-color: var(--teal-900); }
 
 @media (max-width: 1200px) {
-  .act-grid { grid-template-columns: repeat(3, 1fr); }
+  .act-grid, .blog-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 900px) {
-  .act-grid { grid-template-columns: repeat(2, 1fr); }
+  .act-grid, .blog-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 640px) {
-  .act-grid { grid-template-columns: 1fr; }
+  .act-grid, .blog-grid { grid-template-columns: 1fr; }
   .act-pagination { flex-wrap: wrap; }
 }
 

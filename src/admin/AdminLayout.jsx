@@ -27,16 +27,17 @@ const NAV = [
     section: "Menu",
     items: [
       { id: "apercu", label: "Tableau de bord", icon: LayoutDashboard, to: "/admin/apercu" },
-      {
-        id: "contenu",
-        label: "Contenu",
-        icon: FilePenLine,
-        to: "/admin/contenu",
-        children: [
-          { id: "contenu-sections", label: "Sections", to: "/admin/contenu" },
-          { id: "contenu-blog", label: "Blog", to: "/admin/blog" },
-        ],
-      },
+          {
+            id: "contenu",
+            label: "Contenu",
+            icon: FilePenLine,
+            to: "/admin/contenu",
+            children: [
+              { id: "contenu-sections", label: "Sections", to: "/admin/contenu" },
+              { id: "contenu-blog", label: "Articles", to: "/admin/blog" },
+              { id: "contenu-categories", label: "Catégories", to: "/admin/categories" },
+            ],
+          },
     ],
   },
   {

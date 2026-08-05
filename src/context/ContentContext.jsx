@@ -19,6 +19,7 @@ import {
   TESTIMONIALS,
   FAQS,
   BLOG_POSTS,
+  BLOG_CATEGORIES,
   PRICING,
   IMAGES,
   MEMBER_BENEFITS,
@@ -47,6 +48,7 @@ const DEFAULTS = {
   TESTIMONIALS,
   FAQS,
   BLOG_POSTS,
+  BLOG_CATEGORIES,
   PRICING,
   IMAGES,
   MEMBER_BENEFITS,
@@ -83,6 +85,7 @@ const SECTION_TO_KEY = {
   commissions: "COMMISSIONS",
   events: "EVENTS",
   contact_cards: "CONTACT_CARDS",
+  blog_categories: "BLOG_CATEGORIES",
 };
 
 function isPlainObject(v) {

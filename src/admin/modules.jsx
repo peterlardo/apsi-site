@@ -6,6 +6,7 @@ import {
   Network,
   Newspaper,
   Receipt,
+  Tag,
   UserCog,
   UserPlus,
   Wallet,
@@ -14,6 +15,7 @@ import Dashboard from "./Dashboard";
 import Profile from "./Profile";
 import Contenu from "./Contenu";
 import Blog from "./Blog";
+import Categories from "./Categories";
 import FormationsAdmin from "./Formations";
 import Membres from "./Membres";
 import Cotisations from "./Cotisations";
@@ -43,6 +45,13 @@ export const adminModules = [
     icon: Newspaper,
     path: "blog",
     element: <Blog />,
+  },
+  {
+    id: "categories",
+    label: "Catégories",
+    icon: Tag,
+    path: "categories",
+    element: <Categories />,
   },
   {
     id: "formations",

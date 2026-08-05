@@ -370,6 +370,15 @@ export const BLOG_POSTS = [
   },
 ];
 
+export const BLOG_CATEGORIES = [
+  "Cybersécurité",
+  "Réglementation",
+  "Formation",
+  "Veille",
+  "Événement",
+  "Gouvernance",
+];
+
 export const PRICING = [
   {
     name: "Membre Individuel",

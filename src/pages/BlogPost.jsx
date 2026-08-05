@@ -36,7 +36,14 @@ export default function BlogPost() {
       })
       .catch(() => {
         if (!mounted) return;
-        setError("Article introuvable ou indisponible.");
+        const fallback = (BLOG_POSTS || []).find((p) => p.slug === slug);
+        if (fallback) {
+          setPost({ ...fallback, body: "", image: fallback.img || fallback.image || "" });
+          const stored = JSON.parse(localStorage.getItem(`apsi-blog-comments-${slug}`) || "[]");
+          setComments(stored);
+        } else {
+          setError("Article introuvable ou indisponible.");
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -116,8 +123,7 @@ export default function BlogPost() {
   return (
     <>
       <PageHero
-        title={post.title}
-        crumbs={[{ label: "Blog", path: "/blog" }, { label: post.title }]}
+        crumbs={[{ label: "Blog", path: "/blog" }, { label: post.category || "Article" }]}
         image={post.image || IMAGES.heroBlog}
       />
 
@@ -147,7 +153,7 @@ export default function BlogPost() {
                     <Clock size={14} />
                   </span>
                 </div>
-                <h1 className="bp-title">{post.title}</h1>
+                <h3 className="bp-title">{post.title}</h3>
                 {post.excerpt && <p className="bp-excerpt">{post.excerpt}</p>}
               </div>
 

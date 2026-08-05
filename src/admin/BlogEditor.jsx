@@ -29,7 +29,7 @@ export default function BlogEditor() {
   const { id } = useParams();
   const isNew = id === undefined || id === "nouveau";
   const navigate = useNavigate();
-  const { refresh } = useContent();
+  const { refresh, content: { BLOG_CATEGORIES } } = useContent();
 
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(!isNew);
@@ -151,7 +151,31 @@ export default function BlogEditor() {
             <div className="admin-form-row">
               <label className="admin-field">
                 <span>Catégorie</span>
-                <input type="text" value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="Cybersécurité" />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <select
+                    value={(BLOG_CATEGORIES || []).includes(form.category) ? form.category : "__custom__"}
+                    onChange={(e) => {
+                      if (e.target.value !== "__custom__") set("category", e.target.value);
+                      else set("category", "");
+                    }}
+                    style={{ flex: 1 }}
+                  >
+                    <option value="">— Choisir —</option>
+                    {(BLOG_CATEGORIES || []).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                    <option value="__custom__">Autre (saisir manuellement)</option>
+                  </select>
+                  {!(BLOG_CATEGORIES || []).includes(form.category) && (
+                    <input
+                      type="text"
+                      value={form.category}
+                      onChange={(e) => set("category", e.target.value)}
+                      placeholder="Nom de la catégorie"
+                      style={{ flex: 1 }}
+                    />
+                  )}
+                </div>
               </label>
               <label className="admin-field">
                 <span>Date affichée</span>

@@ -30,6 +30,17 @@ content.get("/", async (c) => {
   return c.json({ content: contentMap, blog: posts });
 });
 
+content.get("/blog/:slug", async (c) => {
+  const slug = c.req.param("slug");
+  const post = await c.env.DB.prepare(
+    "SELECT id, title, slug, date, category, excerpt, image, body FROM blog_posts WHERE slug = ? AND published = 1"
+  )
+    .bind(slug)
+    .first();
+  if (!post) return c.json({ error: "Article introuvable" }, 404);
+  return c.json(post);
+});
+
 content.get("/admin", requireAuth, async (c) => {
   const { results } = await c.env.DB.prepare(
     "SELECT id, name, updated_at, json_array_length(data) AS items FROM content_sections ORDER BY name"

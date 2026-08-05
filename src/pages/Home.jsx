@@ -327,7 +327,7 @@ export default function Home() {
                   </div>
                   <div className="blog-body">
                     <span className="blog-cat">{b.category}</span>
-                    <h3><Link to="/blog">{b.title}</Link></h3>
+                    <h3><Link to={`/blog/${b.slug}`}>{b.title}</Link></h3>
                     <p>{b.excerpt}</p>
                   </div>
                 </article>

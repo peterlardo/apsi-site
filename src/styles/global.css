@@ -1063,6 +1063,15 @@ h6 { font-size: 16px; font-weight: 500; }
 .blog-body h3 a:hover { color: var(--teal-700); }
 .blog-body p { font-size: 14.5px; color: var(--text); }
 
+/* ---------- Blog Post Detail ---------- */
+.blog-post-full { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.blog-post-meta { display: flex; align-items: center; gap: 16px; padding: 28px 32px 0; }
+.blog-post-date { font-size: 13px; color: var(--text-light); display: flex; align-items: center; }
+.blog-post-hero-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; margin-top: 20px; }
+.blog-post-body { padding: 32px; font-size: 16px; line-height: 1.8; color: var(--text); }
+.blog-post-body p { margin-bottom: 18px; }
+.blog-post-footer { display: flex; justify-content: space-between; align-items: center; padding: 0 32px 32px; border-top: 1px solid var(--border); padding-top: 24px; margin-top: 8px; }
+
 /* ---------- Newsletter ---------- */
 .newsletter { background: var(--teal-600); position: relative; overflow: hidden; }
 .newsletter::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px); background-size: 26px 26px; mask-image: radial-gradient(circle at 50% 30%, black, transparent 75%); }

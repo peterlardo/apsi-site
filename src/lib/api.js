@@ -58,6 +58,10 @@ export async function getSiteContent() {
   return apiFetch("/content", { auth: false });
 }
 
+export async function getBlogPost(slug) {
+  return apiFetch(`/content/blog/${encodeURIComponent(slug)}`, { auth: false });
+}
+
 // ===== RGPD : consentement, contact, newsletter =====
 export const consentApi = {
   save: (data) => apiFetch("/consents", { method: "POST", body: data, auth: false }),

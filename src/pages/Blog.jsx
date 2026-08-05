@@ -37,9 +37,9 @@ export default function Blog() {
                   </div>
                   <div className="blog-body">
                     <span className="blog-cat">{b.category}</span>
-                    <h3><Link to="/blog">{b.title}</Link></h3>
+                    <h3><Link to={`/blog/${b.slug}`}>{b.title}</Link></h3>
                     <p>{b.excerpt}</p>
-                    <Link to="/blog" className="link-more" style={{ marginTop: 16 }}>
+                    <Link to={`/blog/${b.slug}`} className="link-more" style={{ marginTop: 16 }}>
                       Lire l'article <ArrowRight size={15} />
                     </Link>
                   </div>

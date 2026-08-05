@@ -8,6 +8,7 @@ import Team from "./pages/Team";
 import Pricing from "./pages/Pricing";
 import FAQ from "./pages/FAQ";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
 import Commissions from "./pages/Commissions";
 import Formations from "./pages/Formations";
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="tarifs" element={<Pricing />} />
           <Route path="faq" element={<FAQ />} />
           <Route path="blog" element={<Blog />} />
+          <Route path="blog/:slug" element={<BlogPost />} />
           <Route path="contact" element={<Contact />} />
           <Route path="politique-confidentialite" element={<PolitiqueConfidentialite />} />
           <Route path="cookies" element={<Cookies />} />

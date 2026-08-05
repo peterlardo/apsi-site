@@ -342,6 +342,7 @@ export const FAQS = [
 
 export const BLOG_POSTS = [
   {
+    slug: "ransomware-7-reflexes-essentiels",
     date: "12 Juillet 2026",
     category: "Cybersécurité",
     title: "Ransomware : 7 réflexes essentiels pour protéger votre entreprise",
@@ -350,6 +351,7 @@ export const BLOG_POSTS = [
     img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=900&q=80",
   },
   {
+    slug: "nis2-entreprises-congolaises",
     date: "28 Juin 2026",
     category: "Réglementation",
     title: "NIS2 et entreprises congolaises : ce qui change pour vous",
@@ -358,6 +360,7 @@ export const BLOG_POSTS = [
     img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=900&q=80",
   },
   {
+    slug: "sensibilisation-data-equipes",
     date: "05 Juin 2026",
     category: "Formation",
     title: "Sensibilisation : comment la data aide vos équipes à se protéger",

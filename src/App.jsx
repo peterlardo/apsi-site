@@ -17,6 +17,7 @@ import Evenements from "./pages/Evenements";
 import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import Cookies from "./pages/Cookies";
 import MentionsLegales from "./pages/MentionsLegales";
+import Telechargements from "./pages/Telechargements";
 import Login from "./admin/Login";
 import ForgotPassword from "./admin/ForgotPassword";
 import ResetPassword from "./admin/ResetPassword";
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="politique-confidentialite" element={<PolitiqueConfidentialite />} />
           <Route path="cookies" element={<Cookies />} />
           <Route path="mentions-legales" element={<MentionsLegales />} />
+          <Route path="telechargements" element={<Telechargements />} />
           <Route path="*" element={<Home />} />
         </Route>
 

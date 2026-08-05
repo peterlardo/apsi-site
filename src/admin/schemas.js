@@ -4,8 +4,8 @@ const numberField = (key, label, extra = {}) => ({ key, label, type: "number", .
 const booleanField = (key, label, extra = {}) => ({ key, label, type: "boolean", ...extra });
 const iconField = (key, label = "Icône") => ({ key, label, type: "icon" });
 const urlField = (key, label, extra = {}) => ({ key, label, type: "url", ...extra });
-const stringList = (itemLabel) => ({ type: "strings", itemLabel });
-const objectGroup = (itemLabel, itemFields) => ({ type: "group", itemLabel, itemFields });
+const stringList = (key, itemLabel) => ({ key, type: "strings", itemLabel });
+const objectGroup = (key, itemLabel, itemFields) => ({ key, type: "group", itemLabel, itemFields });
 
 export const SCHEMAS = {
   company: {
@@ -30,7 +30,7 @@ export const SCHEMAS = {
     fields: [
       textField("label", "Libellé"),
       textField("path", "Lien (chemin)", { placeholder: "/a-propos" }),
-      objectGroup("sous-lien", [textField("label", "Libellé"), textField("path", "Lien")]),
+      objectGroup("children", "sous-lien", [textField("label", "Libellé"), textField("path", "Lien")]),
     ],
   },
   features: {
@@ -47,7 +47,7 @@ export const SCHEMAS = {
       iconField("icon"),
       textField("title", "Titre"),
       textareaField("text", "Description"),
-      stringList("point"),
+      stringList("points", "point"),
     ],
   },
   stats: {
@@ -77,7 +77,7 @@ export const SCHEMAS = {
       iconField("icon"),
       textField("title", "Titre"),
       textareaField("text", "Description"),
-      stringList("point"),
+      stringList("points", "point"),
     ],
   },
   quote: {
@@ -146,7 +146,7 @@ export const SCHEMAS = {
       textField("price", "Prix", { placeholder: "50 000" }),
       textField("period", "Période", { placeholder: "FCFA / an" }),
       textareaField("desc", "Description"),
-      objectGroup("avantage", [textField("text", "Avantage"), booleanField("included", "Inclus")]),
+      objectGroup("features", "avantage", [textField("text", "Avantage"), booleanField("included", "Inclus")]),
       booleanField("featured", "Offre mise en avant"),
     ],
   },
@@ -207,8 +207,21 @@ export const SCHEMAS = {
     fields: [
       iconField("icon"),
       textField("title", "Titre"),
-      stringList("ligne"),
+      stringList("lines", "ligne"),
       textField("href", "Lien (optionnel)", { placeholder: "mailto:..." }),
+    ],
+  },
+  downloads: {
+    label: "Téléchargements",
+    kind: "list",
+    itemLabel: "document",
+    fields: [
+      iconField("icon"),
+      textField("title", "Titre"),
+      textareaField("description", "Description"),
+      textField("category", "Catégorie", { placeholder: "Guides, Formulaires..." }),
+      textField("fileSize", "Taille du fichier", { placeholder: "2.4 Mo" }),
+      urlField("fileUrl", "URL du fichier"),
     ],
   },
 };

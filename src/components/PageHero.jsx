@@ -8,7 +8,7 @@ export default function PageHero({ title, crumbs, image, className = "" }) {
     <section className={classes}>
       {image && <div className="page-hero-bg" style={{ backgroundImage: `url(${image})` }} aria-hidden="true" />}
       <div className="container">
-        {title && <h1>{title}</h1>}
+        <h1>{title}</h1>
         <nav className="crumbs" aria-label="Fil d'ariane">
           <Link to="/">Accueil</Link>
           <ChevronRight size={14} />

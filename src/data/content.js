@@ -32,6 +32,12 @@ import {
   Mail,
   Phone,
   Clock,
+  FileText,
+  Download,
+  FileCheck,
+  Shield,
+  BookOpen,
+  File,
 } from "lucide-react";
 
 export const COMPANY = {
@@ -427,6 +433,57 @@ export const PRICING = [
   },
 ];
 
+export const DOWNLOADS = [
+  {
+    icon: ScrollText,
+    title: "Statuts de l'APSI-CG",
+    description: "Statuts officiels de l'association définissant sa mission, sa gouvernance et son fonctionnement.",
+    category: "Documents officiels",
+    fileSize: "420 Ko",
+    fileUrl: "#",
+  },
+  {
+    icon: FileText,
+    title: "Guide cybersécurité PME",
+    description: "Guide pratique pour les petites et moyennes entreprises : bonnes pratiques, checklist de sécurité et plan d'actions.",
+    category: "Guides",
+    fileSize: "2.4 Mo",
+    fileUrl: "#",
+  },
+  {
+    icon: Shield,
+    title: "Checklist conformité RGPD",
+    description: "Liste de vérification complète pour assurer la conformité de votre organisation au règlement général sur la protection des données.",
+    category: "Checklists",
+    fileSize: "310 Ko",
+    fileUrl: "#",
+  },
+  {
+    icon: FileCheck,
+    title: "Formulaire d'adhésion",
+    description: "Formulaire à remplir pour rejoindre l'APSI-CG en tant que membre actif ou sympathisant.",
+    category: "Formulaires",
+    fileSize: "185 Ko",
+    fileUrl: "#",
+  },
+  {
+    icon: BookOpen,
+    title: "Rapport annuel 2025",
+    description: "Bilan des activités, projets réalisés et perspectives de l'association pour l'année 2025.",
+    category: "Rapports",
+    fileSize: "3.1 Mo",
+    fileUrl: "#",
+  },
+  {
+    icon: File,
+    title: "Modèle de politique de sécurité",
+    description: "Template de politique de sécurité de l'information adaptable à votre organisation.",
+    category: "Ressources",
+    fileSize: "520 Ko",
+    fileUrl: "#",
+  },
+];
+
 export const IMAGES = {
   hero: "/hero-1.jpg",
   heroAbout: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=70",
@@ -439,6 +496,7 @@ export const IMAGES = {
   heroCommissions: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=70",
   heroEvenements: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=70",
   heroTeam: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=70",
+  heroTelechargements: "https://images.unsplash.com/photo-1568992687947-868a62a9f521?auto=format&fit=crop&w=1600&q=70",
   aboutMain: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=900&q=80",
   aboutSmall: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=600&q=80",
   ceo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80",

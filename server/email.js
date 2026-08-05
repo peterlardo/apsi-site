@@ -1,4 +1,4 @@
-const FROM = "APSI-CG <noreply@apsi.cg>";
+const FROM = "APSI-CG <onboarding@resend.dev>";
 const TO = "contact@apsi.cg";
 
 async function sendEmail(env, { to, subject, html, replyTo }) {

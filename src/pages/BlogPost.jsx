@@ -123,6 +123,7 @@ export default function BlogPost() {
   return (
     <>
       <PageHero
+        title={<span style={{ fontSize: 40, fontWeight: 500 }}>{post.title}</span>}
         crumbs={[{ label: "Blog", path: "/blog" }, { label: post.category || "Article" }]}
         image={post.image || IMAGES.heroBlog}
       />

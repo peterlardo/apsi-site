@@ -28,6 +28,7 @@ import {
   COMMISSIONS,
   EVENTS,
   CONTACT_CARDS,
+  DOWNLOADS,
 } from "../data/content";
 
 const DEFAULTS = {
@@ -57,6 +58,7 @@ const DEFAULTS = {
   COMMISSIONS,
   EVENTS,
   CONTACT_CARDS,
+  DOWNLOADS,
 };
 
 const SECTION_TO_KEY = {
@@ -85,6 +87,7 @@ const SECTION_TO_KEY = {
   commissions: "COMMISSIONS",
   events: "EVENTS",
   contact_cards: "CONTACT_CARDS",
+  downloads: "DOWNLOADS",
   blog_categories: "BLOG_CATEGORIES",
 };
 

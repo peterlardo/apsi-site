@@ -6,7 +6,7 @@ members.use("*", requireAuth);
 
 const FIELDS = [
   "first_name", "last_name", "email", "phone", "profession",
-  "company", "member_since", "status", "notes",
+  "company", "member_code", "member_since", "status", "notes",
 ];
 
 function pick(body) {

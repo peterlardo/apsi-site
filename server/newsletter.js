@@ -38,8 +38,16 @@ newsletter.post("/", async (c) => {
      VALUES (?, 1, ?, ?)
      ON CONFLICT(email) DO UPDATE SET consent_newsletter = 1, unsubscribed_at = NULL`
   ).bind(email, b.consent_source || "site", getIp(c)).run();
-  try { await sendNewsletterEmail(c.env, { email, source: b.consent_source || "site" }); } catch {}
-  try { await sendWelcomeNewsletterEmail(c.env, { email }); } catch {}
+  try {
+    await sendNewsletterEmail(c.env, { email, source: b.consent_source || "site" });
+  } catch (e) {
+    console.error("Newsletter admin email failed:", e?.message || e);
+  }
+  try {
+    await sendWelcomeNewsletterEmail(c.env, { email });
+  } catch (e) {
+    console.error("Welcome email failed:", e?.message || e);
+  }
   return c.json({ ok: true, email }, 201);
 });
 

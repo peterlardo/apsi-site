@@ -26,6 +26,7 @@ const EMPTY = {
   phone: "",
   profession: "",
   company: "",
+  member_code: "",
   member_since: "",
   status: "actif",
   notes: "",
@@ -84,6 +85,7 @@ export default function Membres() {
       phone: m.phone || "",
       profession: m.profession || "",
       company: m.company || "",
+      member_code: m.member_code || "",
       member_since: m.member_since ? m.member_since.slice(0, 10) : "",
       status: m.status || "actif",
       notes: m.notes || "",
@@ -359,6 +361,17 @@ export default function Membres() {
                     onChange={(e) => setField("member_since", e.target.value)}
                   />
                 </label>
+                <label className="admin-field">
+                  <span>Code membre</span>
+                  <input
+                    type="text"
+                    value={form.member_code}
+                    onChange={(e) => setField("member_code", e.target.value)}
+                    placeholder="Ex : APSI-2026-001"
+                  />
+                </label>
+              </div>
+              <div className="admin-form-row">
                 <label className="admin-field">
                   <span>Statut</span>
                   <select value={form.status} onChange={(e) => setField("status", e.target.value)}>

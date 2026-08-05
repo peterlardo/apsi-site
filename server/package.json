@@ -12,9 +12,9 @@
     "db:migrate": "wrangler d1 execute apsi-cg --remote --file=../migrations/0003_mysql_data.sql"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "hono": "^4.7.0",
-    "jose": "^6.0.0",
-    "bcryptjs": "^3.0.2"
+    "jose": "^6.0.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.0.0",

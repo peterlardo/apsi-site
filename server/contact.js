@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { requireAuth } from "./middleware.js";
+import { sendContactEmail } from "./email.js";
 
 const contact = new Hono();
 
@@ -27,6 +28,11 @@ contact.post("/", async (c) => {
        VALUES (?, 1, 'contact', ?)
        ON CONFLICT(email) DO UPDATE SET consent_newsletter = 1, unsubscribed_at = NULL`
     ).bind(email, getIp(c)).run();
+  }
+  try {
+    await sendContactEmail(c.env, { name, email, subject, message });
+  } catch (e) {
+    console.error("Email send failed:", e.message);
   }
   return c.json({ ok: true, id: meta.last_row_id }, 201);
 });

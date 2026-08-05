@@ -1,0 +1,15 @@
+name = "apsi-cg"
+main = "server/index.js"
+compatibility_date = "2024-12-01"
+
+[vars]
+CORS_ORIGIN = "http://localhost:5173"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "apsi-cg"
+database_id = "9c1cb0e6-327e-455b-881a-72bfeb98671d"
+
+[[migrations]]
+directory = "migrations"
+tag = "v1"

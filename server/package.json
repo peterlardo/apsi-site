@@ -1,25 +1,23 @@
 {
   "name": "apsi-cg-server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
-    "seed": "node seed/index.js",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:apply": "wrangler d1 execute apsi-cg --file=../migrations/0001_initial.sql",
+    "db:seed": "node seed/index.js",
     "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.0",
-    "express": "^5.1.0",
-    "express-rate-limit": "^8.0.1",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^2.2.0",
-    "mysql2": "^3.23.2"
+    "hono": "^4.7.0",
+    "jose": "^6.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.0.0",
+    "wrangler": "^3.0.0"
   }
 }

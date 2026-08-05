@@ -374,6 +374,69 @@ export const BLOG_POSTS = [
       "Les statistiques de phishing simulé révèlent vos points faibles humains. Comment transformer ces données en programme de formation efficace.",
     img: "https://images.unsplash.com/photo-1562813733-b31f71025d54?auto=format&fit=crop&w=900&q=80",
   },
+  {
+    slug: "cloud-security-strategies",
+    date: "20 Mai 2026",
+    category: "Cybersécurité",
+    title: "Cloud security : les stratégies incontournables pour 2026",
+    excerpt:
+      "La migration cloud s'accélère au Congo. Voici les bonnes pratiques pour sécuriser vos données dans les environnements cloud.",
+    img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "phishing-avance-techniques-detection",
+    date: "10 Mai 2026",
+    category: "Cybersécurité",
+    title: "Phishing avancé : techniques de détection et de prévention",
+    excerpt:
+      "Les techniques de phishing évoluent constamment. Apprenez à identifier les tentatives sophistiquées et à protéger vos équipes.",
+    img: "https://images.unsplash.com/photo-1563986768609-322da13575f2?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "rgpd-congo-proteger-donnees",
+    date: "28 Avril 2026",
+    category: "Réglementation",
+    title: "RGPD au Congo : comment protéger les données de vos clients",
+    excerpt:
+      "Le cadre juridique congolais en matière de protection des données évolue. Découvrez les démarches concrètes pour votre conformité.",
+    img: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "securite-socle-numerique",
+    date: "15 Avril 2026",
+    category: "Formation",
+    title: "Sécurité numérique : les bases pour every collaborateur",
+    excerpt:
+      "Chaque collaborateur est un maillon essentiel de la chaîne de sécurité. Formation aux réflexes de base en cybersécurité.",
+    img: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "veille-cyber-tendances-2026",
+    date: "01 Avril 2026",
+    category: "Veille",
+    title: "Veille cyber : les 5 tendances à surveiller en 2026",
+    excerpt:
+      "Intelligence artificielle, Zero Trust, cybersécurité de la chaîne d'approvisionnement… Les tendances qui façonnent le paysage.",
+    img: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "audit-securite-guide-complet",
+    date: "20 Mars 2026",
+    category: "Cybersécurité",
+    title: "Audit de sécurité : guide complet pour les organisations",
+    excerpt:
+      "Un audit de sécurité bien mené est la pierre angulaire de votre stratégie cyber. Méthodologie et conseils pratiques.",
+    img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "conference-apsi-cg-2026",
+    date: "10 Mars 2026",
+    category: "Événement",
+    title: "Retour sur la conférence APSI-CG 2026",
+    excerpt:
+      "Notre conférence annuelle a réuni plus de 200 professionnels. Revivez les moments forts et les keynotes marquantes.",
+    img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=900&q=80",
+  },
 ];
 
 export const BLOG_CATEGORIES = [

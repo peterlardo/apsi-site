@@ -130,6 +130,27 @@ export async function deleteEvent(id) {
   return apiFetch(`/content/admin/events/${id}`, { method: "DELETE" });
 }
 
+// ===== Downloads =====
+export async function getDownloads() {
+  return apiFetch("/content/downloads", { auth: false });
+}
+
+export async function getDownloadsAdmin() {
+  return apiFetch("/content/admin/downloads");
+}
+
+export async function createDownload(data) {
+  return apiFetch("/content/admin/downloads", { method: "POST", body: data });
+}
+
+export async function updateDownload(id, data) {
+  return apiFetch(`/content/admin/downloads/${id}`, { method: "PUT", body: data });
+}
+
+export async function deleteDownload(id) {
+  return apiFetch(`/content/admin/downloads/${id}`, { method: "DELETE" });
+}
+
 // ===== Formations =====
 export const getTrainings = (params = {}) => {
   const qs = new URLSearchParams(

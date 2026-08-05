@@ -18,6 +18,7 @@ import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import Cookies from "./pages/Cookies";
 import MentionsLegales from "./pages/MentionsLegales";
 import Telechargements from "./pages/Telechargements";
+import Actualites from "./pages/Actualites";
 import Login from "./admin/Login";
 import ForgotPassword from "./admin/ForgotPassword";
 import ResetPassword from "./admin/ResetPassword";
@@ -25,6 +26,7 @@ import AdminLayout from "./admin/AdminLayout";
 import SectionEditor from "./admin/SectionEditor";
 import BlogEditor from "./admin/BlogEditor";
 import EventEditor from "./admin/EventEditor";
+import DownloadEditor from "./admin/DownloadEditor";
 import { adminModules } from "./admin/modules";
 
 export default function App() {
@@ -50,6 +52,7 @@ export default function App() {
           <Route path="cookies" element={<Cookies />} />
           <Route path="mentions-legales" element={<MentionsLegales />} />
           <Route path="telechargements" element={<Telechargements />} />
+          <Route path="actualites" element={<Actualites />} />
           <Route path="*" element={<Home />} />
         </Route>
 
@@ -66,6 +69,8 @@ export default function App() {
           <Route path="blog/:id/edit" element={<BlogEditor />} />
           <Route path="events/nouveau" element={<EventEditor />} />
           <Route path="events/:id/edit" element={<EventEditor />} />
+          <Route path="downloads/nouveau" element={<DownloadEditor />} />
+          <Route path="downloads/:id/edit" element={<DownloadEditor />} />
         </Route>
       </Routes>
     </BrowserRouter>

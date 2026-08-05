@@ -351,7 +351,7 @@ export default function Home() {
             tag="Dernier blog"
             title={<strong>Nos dernières analyses</strong>}
             action={
-              <Btn to="/blog" className="btn--outline" small>Voir tous les articles</Btn>
+              <Btn to="/actualites" className="btn--outline" small>Voir toutes les actualités</Btn>
             }
           />
           <div className="blog-grid">

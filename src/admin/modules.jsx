@@ -1,6 +1,7 @@
 import {
   Archive,
   Calendar,
+  Download,
   FilePenLine,
   GraduationCap,
   LayoutDashboard,
@@ -18,6 +19,7 @@ import Contenu from "./Contenu";
 import Blog from "./Blog";
 import Categories from "./Categories";
 import Events from "./Events";
+import Downloads from "./Downloads";
 import FormationsAdmin from "./Formations";
 import Membres from "./Membres";
 import Cotisations from "./Cotisations";
@@ -61,6 +63,13 @@ export const adminModules = [
     icon: Calendar,
     path: "events",
     element: <Events />,
+  },
+  {
+    id: "downloads",
+    label: "Téléchargements",
+    icon: Download,
+    path: "downloads",
+    element: <Downloads />,
   },
   {
     id: "formations",

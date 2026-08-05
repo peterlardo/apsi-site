@@ -37,6 +37,7 @@ const NAV = [
               { id: "contenu-blog", label: "Articles", to: "/admin/blog" },
               { id: "contenu-categories", label: "Catégories", to: "/admin/categories" },
               { id: "contenu-events", label: "Événements", to: "/admin/events" },
+              { id: "contenu-downloads", label: "Téléchargements", to: "/admin/downloads" },
             ],
           },
     ],

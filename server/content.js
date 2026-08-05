@@ -230,4 +230,71 @@ content.delete("/admin/events/:id", requireAuth, async (c) => {
   return c.body(null, { status: 204 });
 });
 
+// ─── Downloads CRUD ────────────────────────────────────────
+
+content.get("/downloads", async (c) => {
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, title, description, category, file_size, file_url, icon FROM downloads WHERE published = 1 ORDER BY created_at DESC"
+  ).all();
+  return c.json(results);
+});
+
+content.get("/admin/downloads", requireAuth, async (c) => {
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, title, description, category, file_size, file_url, icon, published, created_at, updated_at FROM downloads ORDER BY created_at DESC"
+  ).all();
+  return c.json(results);
+});
+
+content.post("/admin/downloads", requireAuth, async (c) => {
+  const b = await c.req.json();
+  const title = String(b.title || "").trim();
+  if (!title) return c.json({ error: "Le titre est requis" }, 400);
+  const { meta } = await c.env.DB.prepare(
+    `INSERT INTO downloads (title, description, category, file_size, file_url, icon, published)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  )
+    .bind(
+      title,
+      String(b.description || ""),
+      String(b.category || ""),
+      String(b.file_size || ""),
+      String(b.file_url || ""),
+      String(b.icon || "FileText"),
+      b.published ? 1 : 0
+    )
+    .run();
+  return c.json({ ok: true, id: meta.last_row_id }, 201);
+});
+
+content.put("/admin/downloads/:id", requireAuth, async (c) => {
+  const id = Number(c.req.param("id"));
+  const b = await c.req.json();
+  const title = String(b.title || "").trim();
+  if (!title) return c.json({ error: "Le titre est requis" }, 400);
+  await c.env.DB.prepare(
+    `UPDATE downloads SET title = ?, description = ?, category = ?, file_size = ?, file_url = ?, icon = ?, published = ?, updated_at = datetime('now')
+     WHERE id = ?`
+  )
+    .bind(
+      title,
+      String(b.description || ""),
+      String(b.category || ""),
+      String(b.file_size || ""),
+      String(b.file_url || ""),
+      String(b.icon || "FileText"),
+      b.published ? 1 : 0,
+      id
+    )
+    .run();
+  return c.json({ ok: true });
+});
+
+content.delete("/admin/downloads/:id", requireAuth, async (c) => {
+  await c.env.DB.prepare("DELETE FROM downloads WHERE id = ?")
+    .bind(Number(c.req.param("id")))
+    .run();
+  return c.body(null, { status: 204 });
+});
+
 export default content;

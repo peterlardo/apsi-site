@@ -286,15 +286,23 @@ export default function Home() {
       </section>
 
       {/* ===== PARTENAIRES (logos) ===== */}
-      <section className="brands section" style={{ padding: "40px 0" }}>
+      <section className="section section--cream">
         <div className="container">
-          <div className="brands-row">
-            {BRANDS.map((b, i) => (
-              <span className="brand-item" key={i} title={b.name}>
-                <img src={b.logo} alt={b.name} className="brand-logo" />
-              </span>
-            ))}
-          </div>
+          <SectionHead
+            center
+            tag="Nos partenaires"
+            title={<>Des organisations qui nous <strong>font confiance</strong></>}
+            text="Ils nous ont choisis pour sécuriser leurs systèmes d'information et renforcer leur résilience numérique."
+          />
+          <Reveal>
+            <div className="brands-row">
+              {BRANDS.map((b, i) => (
+                <span className="brand-item" key={i} title={b.name}>
+                  <img src={b.logo} alt={b.name} className="brand-logo" loading="lazy" />
+                </span>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 

@@ -27,7 +27,7 @@ const emptyForm = {
   category: "",
   excerpt: "",
   image: "",
-  published: 0,
+  published: 1,
   body: "",
 };
 

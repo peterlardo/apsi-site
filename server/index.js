@@ -21,6 +21,7 @@ import trainingsRouter from "./trainings.js";
 import contactRouter from "./contact.js";
 import newsletterRouter from "./newsletter.js";
 import consentsRouter from "./consents.js";
+import downloadsRouter from "./downloads.js";
 
 const app = new Hono();
 
@@ -51,6 +52,7 @@ app.route("/api/trainings", trainingsRouter);
 app.route("/api/contact", contactRouter);
 app.route("/api/newsletter", newsletterRouter);
 app.route("/api/consents", consentsRouter);
+app.route("/api/downloads", downloadsRouter);
 
 app.notFound((c) => c.json({ error: "Route introuvable" }, 404));
 

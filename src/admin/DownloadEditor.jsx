@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
-import { createDownload, getDownloadsAdmin, updateDownload } from "../lib/api";
+import { ArrowLeft, FileUp, Loader2, Save } from "lucide-react";
+import { createDownload, getDownloadFile, deleteDownload } from "../lib/api";
 
 const ICONS = [
   "FileText", "File", "ScrollText", "Shield", "FileCheck",
@@ -13,48 +13,50 @@ const CATEGORIES = [
   "Rapports", "Ressources", "Modèles", "Présentations",
 ];
 
+function formatSize(bytes) {
+  if (!bytes) return "";
+  if (bytes < 1024) return bytes + " o";
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " Ko";
+  return (bytes / 1048576).toFixed(1) + " Mo";
+}
+
 const emptyForm = {
   title: "",
   description: "",
   category: "",
-  file_size: "",
-  file_url: "",
   icon: "FileText",
-  published: 1,
 };
 
 export default function DownloadEditor() {
   const { id } = useParams();
   const isNew = id === undefined || id === "nouveau";
   const navigate = useNavigate();
+  const fileRef = useRef(null);
 
   const [form, setForm] = useState(emptyForm);
+  const [file, setFile] = useState(null);
+  const [existingFile, setExistingFile] = useState(null);
   const [loading, setLoading] = useState(!isNew);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (isNew || loaded) return;
+    if (isNew) return;
     let cancelled = false;
     (async () => {
       try {
-        const res = await getDownloadsAdmin();
-        const items = Array.isArray(res) ? res : [];
-        const item = items.find((d) => String(d.id) === String(id));
+        const res = await getDownloadFile(id);
         if (cancelled) return;
-        if (!item) {
+        if (!res || res.error) {
           setError("Document introuvable");
         } else {
           setForm({
-            title: item.title || "",
-            description: item.description || "",
-            category: item.category || "",
-            file_size: item.file_size || "",
-            file_url: item.file_url || "",
-            icon: item.icon || "FileText",
-            published: Number(item.published) === 1 ? 1 : 0,
+            title: res.title || "",
+            description: res.description || "",
+            category: res.category || "",
+            icon: res.icon || "FileText",
           });
+          setExistingFile({ name: res.file_name, size: res.file_size, type: res.mime_type });
         }
       } catch (err) {
         if (!cancelled) setError(err.message || "Impossible de charger le document");
@@ -63,22 +65,33 @@ export default function DownloadEditor() {
       }
     })();
     return () => { cancelled = true; };
-  }, [id, isNew, loaded]);
+  }, [id, isNew]);
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  function handleFileChange(e) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setExistingFile(null);
+    if (!form.title) set("title", f.name.replace(/\.[^.]+$/, ""));
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
+    if (isNew && !file) { setError("Veuillez sélectionner un fichier"); return; }
     setSaving(true);
     setError("");
     try {
-      if (isNew) {
-        await createDownload(form);
-      } else {
-        await updateDownload(id, form);
-      }
+      const fd = new FormData();
+      fd.append("title", form.title);
+      fd.append("description", form.description);
+      fd.append("category", form.category);
+      fd.append("icon", form.icon);
+      if (file) fd.append("file", file);
+      const res = await createDownload(fd);
       navigate("/admin/downloads");
     } catch (err) {
       setError(err.message || "Erreur lors de l'enregistrement");
@@ -95,7 +108,7 @@ export default function DownloadEditor() {
           </Link>
           <div>
             <h2>{isNew ? "Nouveau document" : "Modifier le document"}</h2>
-            <p>Ajoutez ou modifiez un document téléchargeable. Les brouillons ne sont pas visibles sur le site public.</p>
+            <p>Ajoutez ou modifiez un document téléchargeable.</p>
           </div>
         </div>
         <button type="submit" form="dl-form" className="admin-btn admin-btn--primary" disabled={saving}>
@@ -114,6 +127,39 @@ export default function DownloadEditor() {
       {!loading && (
         <form id="dl-form" onSubmit={handleSubmit} className="admin-panel admin-form" style={{ gap: 18 }}>
           <div className="admin-panel-body" style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <label className="admin-field">
+              <span>Fichier</span>
+              <div
+                className="dl-upload-zone"
+                onClick={() => fileRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("dl-upload-zone--over"); }}
+                onDragLeave={(e) => e.currentTarget.classList.remove("dl-upload-zone--over")}
+                onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove("dl-upload-zone--over"); if (e.dataTransfer.files[0]) handleFileChange({ target: { files: e.dataTransfer.files } }); }}
+              >
+                <input ref={fileRef} type="file" onChange={handleFileChange} style={{ display: "none" }} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv" />
+                {file ? (
+                  <div className="dl-upload-info">
+                    <FileUp size={22} />
+                    <strong>{file.name}</strong>
+                    <small>{formatSize(file.size)} · {file.type || "inconnu"}</small>
+                  </div>
+                ) : existingFile ? (
+                  <div className="dl-upload-info">
+                    <FileUp size={22} />
+                    <strong>{existingFile.name}</strong>
+                    <small>{formatSize(existingFile.size)} · Fichier actuel</small>
+                    <small style={{ color: "var(--teal-700)" }}>Cliquez pour remplacer</small>
+                  </div>
+                ) : (
+                  <div className="dl-upload-info">
+                    <FileUp size={28} />
+                    <strong>Cliquez ou glissez un fichier ici</strong>
+                    <small>PDF, Word, Excel, PowerPoint, ZIP…</small>
+                  </div>
+                )}
+              </div>
+            </label>
+
             <label className="admin-field">
               <span>Titre</span>
               <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)} required placeholder="Nom du document" />
@@ -161,22 +207,6 @@ export default function DownloadEditor() {
             <label className="admin-field">
               <span>Description</span>
               <textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Courte description du document…" rows={3} />
-            </label>
-
-            <div className="admin-form-row">
-              <label className="admin-field">
-                <span>URL du fichier</span>
-                <input type="url" value={form.file_url} onChange={(e) => set("file_url", e.target.value)} placeholder="https://…" />
-              </label>
-              <label className="admin-field">
-                <span>Taille du fichier</span>
-                <input type="text" value={form.file_size} onChange={(e) => set("file_size", e.target.value)} placeholder="2.4 Mo" />
-              </label>
-            </div>
-
-            <label className="admin-check">
-              <input type="checkbox" checked={form.published === 1} onChange={(e) => set("published", e.target.checked ? 1 : 0)} />
-              <span>Publier ce document sur le site public</span>
             </label>
           </div>
         </form>

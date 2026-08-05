@@ -132,23 +132,44 @@ export async function deleteEvent(id) {
 
 // ===== Downloads =====
 export async function getDownloads() {
-  return apiFetch("/content/downloads", { auth: false });
+  return apiFetch("/downloads", { auth: false });
 }
 
 export async function getDownloadsAdmin() {
-  return apiFetch("/content/admin/downloads");
+  return apiFetch("/downloads", { auth: false });
 }
 
-export async function createDownload(data) {
-  return apiFetch("/content/admin/downloads", { method: "POST", body: data });
+export async function getDownloadFile(id) {
+  const base = import.meta.env.VITE_API_URL || "";
+  const res = await fetch(`${base}/api/downloads/${id}`);
+  if (!res.ok) throw new Error("Fichier introuvable");
+  return res.json();
 }
 
-export async function updateDownload(id, data) {
-  return apiFetch(`/content/admin/downloads/${id}`, { method: "PUT", body: data });
+export async function downloadFileBlob(id) {
+  const base = import.meta.env.VITE_API_URL || "";
+  const res = await fetch(`${base}/api/downloads/${id}/file`);
+  if (!res.ok) throw new Error("Téléchargement impossible");
+  return res;
+}
+
+export async function createDownload(formData) {
+  const base = import.meta.env.VITE_API_URL || "";
+  const token = localStorage.getItem("apsi_access_token");
+  const res = await fetch(`${base}/api/downloads`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Erreur lors de l'ajout");
+  }
+  return res.json();
 }
 
 export async function deleteDownload(id) {
-  return apiFetch(`/content/admin/downloads/${id}`, { method: "DELETE" });
+  return apiFetch(`/downloads/${id}`, { method: "DELETE" });
 }
 
 // ===== Formations =====

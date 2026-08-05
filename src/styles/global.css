@@ -111,6 +111,7 @@ h6 { font-size: 16px; font-weight: 500; }
 .btn--member:hover { background: var(--star); box-shadow: 0 14px 30px rgba(198, 27, 23, 0.35); }
 .btn--member:hover .btn-inner { background: var(--white); color: #111; }
 .btn--member:hover .btn-arrow { color: var(--white); }
+.btn--member .btn-arrow { color: var(--white); }
 .btn--sm { padding: 4px; }
 .btn--sm .btn-inner { padding: 9px 16px; font-size: 14px; }
 .btn--sm .btn-arrow { width: 36px; height: 36px; font-size: 15px; }
@@ -1490,6 +1491,18 @@ h6 { font-size: 16px; font-weight: 500; }
 .erase-form label { font-size: 13.5px; font-weight: 600; color: var(--teal-900); }
 .erase-form input { padding: 12px 16px; }
 .legal-small { font-size: 12.5px; color: var(--text-light); margin-top: 24px; }
+
+/* ================== UPLOAD ZONE ================== */
+.dl-upload-zone {
+  border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: 32px 24px;
+  text-align: center; cursor: pointer; transition: all 0.25s; background: var(--cream);
+}
+.dl-upload-zone:hover, .dl-upload-zone--over {
+  border-color: var(--teal-900); background: var(--lime-weak);
+}
+.dl-upload-info { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--teal-900); }
+.dl-upload-info strong { font-size: 15px; }
+.dl-upload-info small { font-size: 13px; color: var(--text-light); }
 
 /* ================== TÉLÉCHARGEMENTS ================== */
 .dl-toolbar { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }

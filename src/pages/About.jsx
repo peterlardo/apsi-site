@@ -80,7 +80,7 @@ export default function About() {
       </section>
 
       {/* Stats */}
-      <section className="stats section" style={{ padding: "70px 0", marginTop: "60px" }}>
+      <section className="stats section" style={{ padding: "30px 0", marginTop: "60px" }}>
         <div className="container stats-grid">
           {STATS.map((s, i) => (
             <Reveal key={i} delay={i * 90}>

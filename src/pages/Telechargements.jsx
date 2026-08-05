@@ -122,17 +122,11 @@ export default function Telechargements() {
                         <p>{d.description}</p>
                       </div>
                       <div className="dl-card-foot">
-                        <span className="dl-card-size">{d.file_size || d.fileSize}</span>
-                        {d.file_url && d.file_url !== "#" ? (
-                          <a href={d.file_url} className="btn btn--sm" target="_blank" rel="noopener noreferrer">
-                            <span className="btn-inner">Télécharger</span>
-                            <span className="btn-arrow"><Download size={15} /></span>
-                          </a>
-                        ) : (
-                          <span className="btn btn--sm" style={{ opacity: 0.5, cursor: "default" }}>
-                            <span className="btn-inner">Bientôt disponible</span>
-                          </span>
-                        )}
+                        <span className="dl-card-size">{d.file_size ? (d.file_size < 1048576 ? (d.file_size / 1024).toFixed(0) + " Ko" : (d.file_size / 1048576).toFixed(1) + " Mo") : ""}</span>
+                        <a href={`${import.meta.env.VITE_API_URL || ""}/api/downloads/${d.id}/file`} className="btn btn--sm">
+                          <span className="btn-inner">Télécharger</span>
+                          <span className="btn-arrow"><Download size={15} /></span>
+                        </a>
                       </div>
                     </div>
                   );

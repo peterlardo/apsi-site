@@ -1,0 +1,11 @@
+node_modules/
+dist/
+server/data/
+server/.env
+.env
+.env.*
+!.env.example
+*.log
+.envsitter/
+.opencode/
+tmp/

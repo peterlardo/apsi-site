@@ -104,7 +104,6 @@ export default function Actualites() {
                     <div className="act-card-body">
                       <span className="act-card-cat">{b.category}</span>
                       <h3><Link to={`/blog/${b.slug}`}>{b.title}</Link></h3>
-                      <p>{b.excerpt}</p>
                       <Link to={`/blog/${b.slug}`} className="link-more">
                         Lire la suite <ArrowRight size={14} />
                       </Link>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Calendar } from "lucide-react";
 import Reveal from "../components/Reveal";
@@ -5,6 +6,7 @@ import SectionHead from "../components/SectionHead";
 import PageHero from "../components/PageHero";
 import Newsletter from "../components/Newsletter";
 import { useContent } from "../context/ContentContext";
+import { getSiteContent } from "../lib/api";
 
 const trunc = (s, n = 20) => {
   if (!s) return "";
@@ -14,6 +16,19 @@ const trunc = (s, n = 20) => {
 
 export default function Blog() {
   const { content: { BLOG_POSTS, IMAGES } } = useContent();
+  const [apiPosts, setApiPosts] = useState(null);
+
+  useEffect(() => {
+    getSiteContent()
+      .then((data) => {
+        if (data && Array.isArray(data.blog) && data.blog.length > 0) {
+          setApiPosts(data.blog);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const posts = apiPosts || BLOG_POSTS || [];
   return (
     <>
       <PageHero
@@ -31,11 +46,11 @@ export default function Blog() {
             text="Des articles d'experts sur la cybersécurité, la réglementation et les bonnes pratiques."
           />
           <div className="blog-grid">
-            {BLOG_POSTS.map((b, i) => (
+            {posts.map((b, i) => (
               <Reveal key={i} delay={i * 100}>
                 <article className="blog-card">
                   <div className="blog-thumb">
-                    <img src={b.img} alt={b.title} loading="lazy" />
+                    <img src={b.image || b.img} alt={b.title} loading="lazy" />
                     <span className="blog-meta">
                       <Calendar size={11} style={{ verticalAlign: -1, marginRight: 4 }} />
                       {b.date}

@@ -95,6 +95,7 @@ export default function Downloads() {
                     </td>
                     <td>
                       <span className="badge badge--blue">{d.category || "—"}</span>
+                      {d.restricted ? <span className="badge" style={{ marginLeft: 6, background: "#fef3c7", color: "#92400e" }}>Membres</span> : null}
                     </td>
                     <td>{d.file_size || "—"}</td>
                     <td>

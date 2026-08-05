@@ -152,11 +152,26 @@ export async function getDownloadFile(id) {
   return res.json();
 }
 
-export async function downloadFileBlob(id) {
+export async function downloadFileBlob(id, memberCode) {
   const base = import.meta.env.VITE_API_URL || "";
-  const res = await fetch(`${base}/api/downloads/${id}/file`);
-  if (!res.ok) throw new Error("Téléchargement impossible");
+  const headers = {};
+  if (memberCode) headers["X-Member-Code"] = memberCode;
+  const res = await fetch(`${base}/api/downloads/${id}/file`, { headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Téléchargement impossible");
+  }
   return res;
+}
+
+export async function verifyMember(code) {
+  const base = import.meta.env.VITE_API_URL || "";
+  const res = await fetch(`${base}/api/downloads/verify-member`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+  });
+  return res.json();
 }
 
 export async function createDownload(formData) {

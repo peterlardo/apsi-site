@@ -1504,6 +1504,56 @@ h6 { font-size: 16px; font-weight: 500; }
 .dl-upload-info strong { font-size: 15px; }
 .dl-upload-info small { font-size: 13px; color: var(--text-light); }
 
+/* Membership bar */
+.dl-member-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--teal-900); color: var(--white); padding: 10px 20px;
+  border-radius: var(--radius); margin-bottom: 24px; font-size: 14px;
+}
+.dl-member-bar strong { color: var(--lime-400); }
+.dl-member-bar button {
+  background: none; border: 1px solid rgba(255,255,255,0.3); color: var(--white);
+  padding: 5px 14px; border-radius: var(--radius); font-size: 12.5px; cursor: pointer; transition: all 0.2s;
+}
+.dl-member-bar button:hover { background: rgba(255,255,255,0.15); }
+
+/* Restricted card */
+.dl-card--restricted { border-color: #f59e0b; }
+.dl-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.dl-card-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 999px;
+}
+
+/* Verification modal */
+.dl-modal {
+  position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); padding: 24px;
+}
+.dl-modal-content {
+  background: var(--white); border-radius: var(--radius-lg); padding: 36px 32px;
+  max-width: 420px; width: 100%; position: relative; text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+}
+.dl-modal-close {
+  position: absolute; top: 14px; right: 14px; background: none; border: none;
+  color: var(--text-light); cursor: pointer; padding: 4px;
+}
+.dl-modal-icon {
+  width: 64px; height: 64px; border-radius: 50%; background: #fef3c7; color: #92400e;
+  display: grid; place-items: center; margin: 0 auto 16px;
+}
+.dl-modal-content h3 { font-size: 20px; color: var(--teal-900); margin-bottom: 8px; }
+.dl-modal-content > p { font-size: 14px; color: var(--text); margin-bottom: 20px; line-height: 1.6; }
+.dl-modal-form { display: flex; flex-direction: column; gap: 12px; }
+.dl-modal-form input {
+  padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--radius);
+  font-size: 15px; text-align: center; letter-spacing: 2px; font-weight: 600;
+}
+.dl-modal-form input:focus { border-color: var(--teal-900); outline: none; }
+.dl-modal-error { color: #dc2626; font-size: 13px; text-align: center; }
+
 /* ================== TÉLÉCHARGEMENTS ================== */
 .dl-toolbar { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
 .dl-search {

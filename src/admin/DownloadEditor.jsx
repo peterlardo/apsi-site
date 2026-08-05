@@ -25,6 +25,7 @@ const emptyForm = {
   description: "",
   category: "",
   icon: "FileText",
+  restricted: 0,
 };
 
 export default function DownloadEditor() {
@@ -90,6 +91,7 @@ export default function DownloadEditor() {
       fd.append("description", form.description);
       fd.append("category", form.category);
       fd.append("icon", form.icon);
+      fd.append("restricted", String(form.restricted));
       if (file) fd.append("file", file);
       const res = await createDownload(fd);
       navigate("/admin/downloads");
@@ -207,6 +209,11 @@ export default function DownloadEditor() {
             <label className="admin-field">
               <span>Description</span>
               <textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Courte description du document…" rows={3} />
+            </label>
+
+            <label className="admin-check">
+              <input type="checkbox" checked={form.restricted === 1} onChange={(e) => set("restricted", e.target.checked ? 1 : 0)} />
+              <span>Réservé aux membres actifs (vérification par code membre)</span>
             </label>
           </div>
         </form>

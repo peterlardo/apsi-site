@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Download, Search } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Download, Lock, Search, X } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
@@ -7,12 +7,19 @@ import SectionHead from "../components/SectionHead";
 import CtaSection from "../components/CtaSection";
 import Newsletter from "../components/Newsletter";
 import { useContent } from "../context/ContentContext";
-import { getDownloads } from "../lib/api";
+import { getDownloads, verifyMember, downloadFileBlob } from "../lib/api";
 
 const FILTER_ALL = "Tous";
 
 function getIcon(name) {
   return LucideIcons[name] || LucideIcons.FileText;
+}
+
+function formatSize(bytes) {
+  if (!bytes) return "";
+  if (bytes < 1024) return bytes + " o";
+  if (bytes < 1048576) return (bytes / 1024).toFixed(0) + " Ko";
+  return (bytes / 1048576).toFixed(1) + " Mo";
 }
 
 export default function Telechargements() {
@@ -21,10 +28,29 @@ export default function Telechargements() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(FILTER_ALL);
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalDoc, setModalDoc] = useState(null);
+  const [memberCode, setMemberCode] = useState("");
+  const [verifiedMember, setVerifiedMember] = useState(null);
+  const [verifyError, setVerifyError] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const codeRef = useRef(null);
+
   useEffect(() => {
     getDownloads()
       .then((data) => { if (Array.isArray(data) && data.length > 0) setApiDownloads(data); })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem("apsi_member_code");
+    if (saved) {
+      setMemberCode(saved);
+      verifyMember(saved).then((res) => {
+        if (res.valid) setVerifiedMember(res.member);
+      }).catch(() => {});
+    }
   }, []);
 
   const downloads = useMemo(() => {
@@ -56,7 +82,58 @@ export default function Telechargements() {
     return matchesQuery && matchesCat;
   });
 
-  const isApiData = !!apiDownloads;
+  function openModal(doc) {
+    if (verifiedMember) {
+      handleDownload(doc);
+      return;
+    }
+    setModalDoc(doc);
+    setModalOpen(true);
+    setVerifyError("");
+    setTimeout(() => codeRef.current?.focus(), 100);
+  }
+
+  async function handleVerify(e) {
+    e.preventDefault();
+    if (!memberCode.trim()) return;
+    setVerifying(true);
+    setVerifyError("");
+    try {
+      const res = await verifyMember(memberCode.trim());
+      if (res.valid) {
+        setVerifiedMember(res.member);
+        sessionStorage.setItem("apsi_member_code", memberCode.trim());
+        setModalOpen(false);
+        if (modalDoc) handleDownload(modalDoc);
+      } else {
+        setVerifyError(res.error || "Code invalide");
+      }
+    } catch {
+      setVerifyError("Erreur de vérification");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  async function handleDownload(doc) {
+    setDownloading(true);
+    try {
+      const res = await downloadFileBlob(doc.id, memberCode || undefined);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc.file_name || doc.title || "document";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.message || "Erreur de téléchargement");
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <>
@@ -74,6 +151,15 @@ export default function Telechargements() {
             title={<>Téléchargez nos <strong>documents</strong></>}
             text="Accédez aux statuts, guides, formulaires et ressources de l'APSI-CG pour renforcer votre sécurité numérique."
           />
+
+          {verifiedMember && (
+            <div className="dl-member-bar">
+              <span>Membre connecté : <strong>{verifiedMember.first_name} {verifiedMember.last_name}</strong></span>
+              <button onClick={() => { setVerifiedMember(null); setMemberCode(""); sessionStorage.removeItem("apsi_member_code"); }}>
+                Déconnexion
+              </button>
+            </div>
+          )}
 
           <Reveal>
             <div className="dl-toolbar">
@@ -111,22 +197,32 @@ export default function Telechargements() {
               ) : (
                 filtered.map((d, i) => {
                   const IconComp = d.IconComp;
+                  const isRestricted = d.restricted === 1;
                   return (
-                    <div className="dl-card" key={d.id || i}>
+                    <div className={`dl-card${isRestricted ? " dl-card--restricted" : ""}`} key={d.id || i}>
                       <div className="dl-card-icon">
                         <IconComp size={28} strokeWidth={1.8} />
                       </div>
                       <div className="dl-card-body">
-                        <span className="dl-card-cat">{d.category}</span>
+                        <div className="dl-card-header">
+                          <span className="dl-card-cat">{d.category}</span>
+                          {isRestricted && <span className="dl-card-badge"><Lock size={11} /> Membres</span>}
+                        </div>
                         <h3>{d.title}</h3>
                         <p>{d.description}</p>
                       </div>
                       <div className="dl-card-foot">
-                        <span className="dl-card-size">{d.file_size ? (d.file_size < 1048576 ? (d.file_size / 1024).toFixed(0) + " Ko" : (d.file_size / 1048576).toFixed(1) + " Mo") : ""}</span>
-                        <a href={`${import.meta.env.VITE_API_URL || ""}/api/downloads/${d.id}/file`} className="btn btn--sm">
-                          <span className="btn-inner">Télécharger</span>
+                        <span className="dl-card-size">{formatSize(d.file_size)}</span>
+                        <button
+                          className={`btn btn--sm${isRestricted && !verifiedMember ? " btn--outline" : ""}`}
+                          onClick={() => isRestricted ? openModal(d) : handleDownload(d)}
+                          disabled={downloading}
+                        >
+                          <span className="btn-inner">
+                            {isRestricted && !verifiedMember ? "Vérifier pour télécharger" : "Télécharger"}
+                          </span>
                           <span className="btn-arrow"><Download size={15} /></span>
-                        </a>
+                        </button>
                       </div>
                     </div>
                   );
@@ -136,6 +232,31 @@ export default function Telechargements() {
           </Reveal>
         </div>
       </section>
+
+      {modalOpen && (
+        <div className="dl-modal" onClick={() => setModalOpen(false)}>
+          <div className="dl-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="dl-modal-close" onClick={() => setModalOpen(false)}><X size={18} /></button>
+            <div className="dl-modal-icon"><Lock size={32} /></div>
+            <h3>Document réservé aux membres</h3>
+            <p>Entrez votre code membre pour accéder au téléchargement de <strong>{modalDoc?.title}</strong>.</p>
+            <form onSubmit={handleVerify} className="dl-modal-form">
+              <input
+                ref={codeRef}
+                type="text"
+                value={memberCode}
+                onChange={(e) => setMemberCode(e.target.value)}
+                placeholder="Votre code membre"
+                required
+              />
+              {verifyError && <div className="dl-modal-error">{verifyError}</div>}
+              <button type="submit" className="btn" disabled={verifying}>
+                <span className="btn-inner">{verifying ? "Vérification…" : "Vérifier"}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       <CtaSection />
       <Newsletter />

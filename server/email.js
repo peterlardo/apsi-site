@@ -1,4 +1,4 @@
-const FROM = "APSI-CG <newsletter@apsi.cg>";
+const FROM = "APSI-CG <onboarding@resend.dev>";
 const TO = "contact@apsi.cg";
 
 async function sendEmail(env, { to, subject, html, replyTo }) {
@@ -28,6 +28,7 @@ async function sendEmail(env, { to, subject, html, replyTo }) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     console.error("Resend error:", res.status, JSON.stringify(data));
+    throw new Error(`Resend ${res.status}: ${data.error || JSON.stringify(data)}`);
   }
   return data;
 }

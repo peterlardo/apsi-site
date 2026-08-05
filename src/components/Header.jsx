@@ -22,6 +22,7 @@ const MENU = [
   { label: "Notre équipe", path: "/equipe" },
   { label: "Événements", path: "/evenements" },
   { label: "Actualités", path: "/blog" },
+  { label: "Téléchargements", path: "/telechargements" },
 ];
 
 export default function Header() {

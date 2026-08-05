@@ -55,8 +55,8 @@ app.route("/api/consents", consentsRouter);
 app.notFound((c) => c.json({ error: "Route introuvable" }, 404));
 
 app.onError((err, c) => {
-  console.error(err);
-  return c.json({ error: "Erreur interne du serveur" }, 500);
+  console.error("WORKER ERROR:", err.message, err.stack);
+  return c.json({ error: "Erreur interne du serveur", detail: err.message }, 500);
 });
 
 export default app;

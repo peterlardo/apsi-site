@@ -1,4 +1,4 @@
-const FROM = "APSI-CG <onboarding@resend.dev>";
+const FROM = "APSI-CG <noreply@apsi.cg>";
 const TO = "contact@apsi.cg";
 
 async function sendEmail(env, { to, subject, html, replyTo }) {
@@ -12,7 +12,7 @@ async function sendEmail(env, { to, subject, html, replyTo }) {
     from: FROM,
     to: [to],
     subject,
-    content: [{ type: "text/html", value: html }],
+    html,
   };
   if (replyTo) payload.reply_to = replyTo;
 
@@ -25,11 +25,11 @@ async function sendEmail(env, { to, subject, html, replyTo }) {
     body: JSON.stringify(payload),
   });
 
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = await res.text();
-    console.error("Resend error:", res.status, err);
+    console.error("Resend error:", res.status, JSON.stringify(data));
   }
-  return res.json();
+  return data;
 }
 
 export async function sendContactEmail(env, { name, email, subject, message }) {

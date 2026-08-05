@@ -136,10 +136,9 @@ auth.post("/forgot-password", async (c) => {
   if (!user) {
     return c.json({ ok: true, message: "Si cette adresse est associée à un compte, vous recevrez un lien de réinitialisation." });
   }
-  const crypto = globalThis.crypto || (await import("crypto")).webcrypto;
-  const tokenBytes = new Uint8Array(32);
-  crypto.getRandomValues(tokenBytes);
-  const token = Array.from(tokenBytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  const tokenArray = new Uint8Array(32);
+  globalThis.crypto.getRandomValues(tokenArray);
+  const token = [...tokenArray].map((b) => b.toString(16).padStart(2, "0")).join("");
   const expiresAt = new Date(Date.now() + 3600000).toISOString();
   await c.env.DB.prepare(
     "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)"

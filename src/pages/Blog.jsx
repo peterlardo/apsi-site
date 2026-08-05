@@ -6,6 +6,12 @@ import PageHero from "../components/PageHero";
 import Newsletter from "../components/Newsletter";
 import { useContent } from "../context/ContentContext";
 
+const trunc = (s, n = 20) => {
+  if (!s) return "";
+  const w = s.split(/\s+/);
+  return w.length <= n ? s : w.slice(0, n).join(" ") + "…";
+};
+
 export default function Blog() {
   const { content: { BLOG_POSTS, IMAGES } } = useContent();
   return (
@@ -38,7 +44,7 @@ export default function Blog() {
                   <div className="blog-body">
                     <span className="blog-cat">{b.category}</span>
                     <h3><Link to={`/blog/${b.slug}`}>{b.title}</Link></h3>
-                    <p>{b.excerpt}</p>
+                    <p>{trunc(b.excerpt)}</p>
                     <Link to={`/blog/${b.slug}`} className="link-more" style={{ marginTop: 16 }}>
                       Lire l'article <ArrowRight size={15} />
                     </Link>

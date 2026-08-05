@@ -1,35 +1,33 @@
+const FROM = "APSI-CG <onboarding@resend.dev>";
 const TO = "contact@apsi.cg";
 
-const mailChannelsEndpoint = "https://api.mailchannels.net/tx/v1/email";
-
-function buildPersonalizations(toEmail) {
-  return [{ email: toEmail }];
-}
-
-function buildFrom() {
-  return { name: "APSI-CG", email: "noreply@apsi-cg.org" };
-}
-
 async function sendEmail(env, { to, subject, html, replyTo }) {
-  const body = {
-    personalizations: buildPersonalizations(to),
-    from: buildFrom(),
+  const apiKey = env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("RESEND_API_KEY not set");
+    return null;
+  }
+
+  const payload = {
+    from: FROM,
+    to: [to],
     subject,
     content: [{ type: "text/html", value: html }],
   };
-  if (replyTo) {
-    body.from.reply_to = { email: replyTo };
-  }
+  if (replyTo) payload.reply_to = replyTo;
 
-  const res = await fetch(mailChannelsEndpoint, {
+  const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    console.error("MailChannels error:", err);
+    console.error("Resend error:", res.status, err);
   }
   return res.json();
 }
@@ -37,8 +35,8 @@ async function sendEmail(env, { to, subject, html, replyTo }) {
 export async function sendContactEmail(env, { name, email, subject, message }) {
   return sendEmail(env, {
     to: TO,
-    subject: subject || `Nouveau message de ${name}`,
     replyTo: email,
+    subject: subject || `Nouveau message de ${name}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#0d9488;">Nouveau message de contact</h2>
@@ -76,8 +74,8 @@ export async function sendNewsletterEmail(env, { email, source }) {
 export async function sendTrainingRegistrationEmail(env, { fullName, email, phone, organization, profile, trainingTitle, notes }) {
   return sendEmail(env, {
     to: TO,
-    subject: `Nouvelle inscription formation — ${trainingTitle}`,
     replyTo: email,
+    subject: `Nouvelle inscription formation — ${trainingTitle}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#0d9488;">Nouvelle inscription à une formation</h2>
@@ -117,8 +115,6 @@ export async function sendResetPasswordEmail(env, { name, email, resetUrl }) {
             <strong style="color:#475569;">Important :</strong> Ce lien expire dans <strong>1 heure</strong>. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email — votre mot de passe actuel restera inchangé.
           </p>
         </div>
-        <p style="color:#475569;line-height:1.6;">Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :</p>
-        <p style="word-break:break-all;color:#0d9488;font-size:13px;background:#f1f5f9;padding:12px;border-radius:4px;">${resetUrl}</p>
         <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0;" />
         <p style="color:#94a3b8;font-size:12px;text-align:center;">
           APSI-CG — Association des Professionnels de la Sécurité de l'Information du Congo<br/>

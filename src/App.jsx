@@ -17,6 +17,8 @@ import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import Cookies from "./pages/Cookies";
 import MentionsLegales from "./pages/MentionsLegales";
 import Login from "./admin/Login";
+import ForgotPassword from "./admin/ForgotPassword";
+import ResetPassword from "./admin/ResetPassword";
 import AdminLayout from "./admin/AdminLayout";
 import SectionEditor from "./admin/SectionEditor";
 import BlogEditor from "./admin/BlogEditor";
@@ -47,6 +49,8 @@ export default function App() {
         </Route>
 
         <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="apercu" replace />} />
           {adminModules.map((m) => (

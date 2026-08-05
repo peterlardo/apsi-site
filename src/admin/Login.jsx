@@ -77,6 +77,8 @@ export default function Login() {
           </button>
         </form>
 
+        <Link to="/admin/forgot-password" className="admin-forgot-link">Mot de passe oublié ?</Link>
+
         <Link to="/" className="admin-login-back">← Retour au site public</Link>
       </div>
     </div>

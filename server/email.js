@@ -114,3 +114,53 @@ export async function sendTrainingRegistrationEmail(env, { fullName, email, phon
   }
   return res.json();
 }
+
+export async function sendResetPasswordEmail(env, { name, email, resetUrl }) {
+  const apiKey = env.RESEND_API_KEY;
+  if (!apiKey) return null;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: FROM,
+      to: [email],
+      subject: "Réinitialisation de votre mot de passe APSI-CG",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+          <div style="text-align:center;padding:24px 0;">
+            <div style="display:inline-block;background:#0d9488;color:#fff;font-size:20px;font-weight:700;padding:12px 24px;border-radius:8px;">APSI-CG</div>
+          </div>
+          <h2 style="color:#1e293b;text-align:center;">Réinitialisation du mot de passe</h2>
+          <p style="color:#475569;line-height:1.6;">Bonjour <strong>${name || "Utilisateur"}</strong>,</p>
+          <p style="color:#475569;line-height:1.6;">Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte APSI-CG.</p>
+          <p style="color:#475569;line-height:1.6;">Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :</p>
+          <div style="text-align:center;margin:32px 0;">
+            <a href="${resetUrl}" style="display:inline-block;background:#0d9488;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:16px;">Réinitialiser mon mot de passe</a>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:24px 0;">
+            <p style="margin:0;color:#64748b;font-size:13px;line-height:1.5;">
+              <strong style="color:#475569;">Important :</strong> Ce lien expire dans <strong>1 heure</strong>. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email — votre mot de passe actuel restera inchangé.
+            </p>
+          </div>
+          <p style="color:#475569;line-height:1.6;">Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :</p>
+          <p style="word-break:break-all;color:#0d9488;font-size:13px;background:#f1f5f9;padding:12px;border-radius:4px;">${resetUrl}</p>
+          <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0;" />
+          <p style="color:#94a3b8;font-size:12px;text-align:center;">
+            APSI-CG — Association des Professionnels de la Sécurité de l'Information du Congo<br/>
+            Ceci est un message automatique, merci de ne pas y répondre.
+          </p>
+        </div>
+      `,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("Resend reset error:", err);
+  }
+  return res.json();
+}

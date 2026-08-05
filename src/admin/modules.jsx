@@ -1,5 +1,6 @@
 import {
   Archive,
+  Calendar,
   FilePenLine,
   GraduationCap,
   LayoutDashboard,
@@ -16,6 +17,7 @@ import Profile from "./Profile";
 import Contenu from "./Contenu";
 import Blog from "./Blog";
 import Categories from "./Categories";
+import Events from "./Events";
 import FormationsAdmin from "./Formations";
 import Membres from "./Membres";
 import Cotisations from "./Cotisations";
@@ -52,6 +54,13 @@ export const adminModules = [
     icon: Tag,
     path: "categories",
     element: <Categories />,
+  },
+  {
+    id: "events",
+    label: "Événements",
+    icon: Calendar,
+    path: "events",
+    element: <Events />,
   },
   {
     id: "formations",

@@ -31,7 +31,7 @@ export class ApiError extends Error {
 export async function apiFetch(path, { method = "GET", body, auth = true, retried = false } = {}) {
   const res = await fetch(`${API_BASE}/api${path}`, {
     method,
-    credentials: "include",
+    credentials: auth ? "include" : "omit",
     headers: {
       ...(body ? { "Content-Type": "application/json" } : {}),
       ...(auth && accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
@@ -103,6 +103,31 @@ export async function updateBlogPost(id, post) {
 
 export async function deleteBlogPost(id) {
   return apiFetch(`/content/admin/blog/${id}`, { method: "DELETE" });
+}
+
+// ===== Events =====
+export async function getEvents() {
+  return apiFetch("/content/events", { auth: false });
+}
+
+export async function getEvent(slug) {
+  return apiFetch(`/content/events/${encodeURIComponent(slug)}`, { auth: false });
+}
+
+export async function getEventsAdmin() {
+  return apiFetch("/content/admin/events");
+}
+
+export async function createEvent(event) {
+  return apiFetch("/content/admin/events", { method: "POST", body: event });
+}
+
+export async function updateEvent(id, event) {
+  return apiFetch(`/content/admin/events/${id}`, { method: "PUT", body: event });
+}
+
+export async function deleteEvent(id) {
+  return apiFetch(`/content/admin/events/${id}`, { method: "DELETE" });
 }
 
 // ===== Formations =====

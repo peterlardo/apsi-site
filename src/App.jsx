@@ -23,6 +23,7 @@ import ResetPassword from "./admin/ResetPassword";
 import AdminLayout from "./admin/AdminLayout";
 import SectionEditor from "./admin/SectionEditor";
 import BlogEditor from "./admin/BlogEditor";
+import EventEditor from "./admin/EventEditor";
 import { adminModules } from "./admin/modules";
 
 export default function App() {
@@ -61,6 +62,8 @@ export default function App() {
           <Route path="contenu/:name" element={<SectionEditor />} />
           <Route path="blog/nouveau" element={<BlogEditor />} />
           <Route path="blog/:id/edit" element={<BlogEditor />} />
+          <Route path="events/nouveau" element={<EventEditor />} />
+          <Route path="events/:id/edit" element={<EventEditor />} />
         </Route>
       </Routes>
     </BrowserRouter>

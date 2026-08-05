@@ -136,4 +136,98 @@ content.delete("/admin/blog/:id", requireAuth, async (c) => {
   return c.body(null, { status: 204 });
 });
 
+// ─── Events CRUD ────────────────────────────────────────────
+
+content.get("/events", async (c) => {
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, title, slug, date, place, category, excerpt, image FROM events WHERE published = 1 ORDER BY created_at DESC"
+  ).all();
+  return c.json(results);
+});
+
+content.get("/events/:slug", async (c) => {
+  const slug = c.req.param("slug");
+  const post = await c.env.DB.prepare(
+    "SELECT id, title, slug, date, place, category, excerpt, image, body FROM events WHERE slug = ? AND published = 1"
+  )
+    .bind(slug)
+    .first();
+  if (!post) return c.json({ error: "Événement introuvable" }, 404);
+  return c.json(post);
+});
+
+content.get("/admin/events", requireAuth, async (c) => {
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, title, slug, date, place, category, excerpt, image, published, created_at, updated_at FROM events ORDER BY created_at DESC"
+  ).all();
+  return c.json(results);
+});
+
+content.post("/admin/events", requireAuth, async (c) => {
+  const b = await c.req.json();
+  const title = String(b.title || "").trim();
+  if (!title) return c.json({ error: "Le titre est requis" }, 400);
+  const slug = slugify(b.slug || title);
+  const existing = await c.env.DB.prepare("SELECT id FROM events WHERE slug = ?")
+    .bind(slug)
+    .first();
+  if (existing) return c.json({ error: "Ce slug existe déjà" }, 409);
+  const { meta } = await c.env.DB.prepare(
+    `INSERT INTO events (title, slug, date, place, category, excerpt, image, body, published)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  )
+    .bind(
+      title,
+      slug,
+      String(b.date || ""),
+      String(b.place || ""),
+      String(b.category || ""),
+      String(b.excerpt || ""),
+      String(b.image || ""),
+      String(b.body || ""),
+      b.published ? 1 : 0
+    )
+    .run();
+  return c.json({ ok: true, id: meta.last_row_id }, 201);
+});
+
+content.put("/admin/events/:id", requireAuth, async (c) => {
+  const id = Number(c.req.param("id"));
+  const b = await c.req.json();
+  const title = String(b.title || "").trim();
+  if (!title) return c.json({ error: "Le titre est requis" }, 400);
+  const slug = slugify(b.slug || title);
+  const existing = await c.env.DB.prepare(
+    "SELECT id FROM events WHERE slug = ? AND id <> ?"
+  )
+    .bind(slug, id)
+    .first();
+  if (existing) return c.json({ error: "Ce slug existe déjà" }, 409);
+  await c.env.DB.prepare(
+    `UPDATE events SET title = ?, slug = ?, date = ?, place = ?, category = ?, excerpt = ?, image = ?, body = ?, published = ?, updated_at = datetime('now')
+     WHERE id = ?`
+  )
+    .bind(
+      title,
+      slug,
+      String(b.date || ""),
+      String(b.place || ""),
+      String(b.category || ""),
+      String(b.excerpt || ""),
+      String(b.image || ""),
+      String(b.body || ""),
+      b.published ? 1 : 0,
+      id
+    )
+    .run();
+  return c.json({ ok: true });
+});
+
+content.delete("/admin/events/:id", requireAuth, async (c) => {
+  await c.env.DB.prepare("DELETE FROM events WHERE id = ?")
+    .bind(Number(c.req.param("id")))
+    .run();
+  return c.body(null, { status: 204 });
+});
+
 export default content;

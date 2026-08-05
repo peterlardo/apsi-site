@@ -36,6 +36,7 @@ const NAV = [
               { id: "contenu-sections", label: "Sections", to: "/admin/contenu" },
               { id: "contenu-blog", label: "Articles", to: "/admin/blog" },
               { id: "contenu-categories", label: "Catégories", to: "/admin/categories" },
+              { id: "contenu-events", label: "Événements", to: "/admin/events" },
             ],
           },
     ],

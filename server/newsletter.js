@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { requireAuth } from "./middleware.js";
+import { sendNewsletterEmail } from "./email.js";
 
 const newsletter = new Hono();
 
@@ -30,6 +31,7 @@ newsletter.post("/", async (c) => {
      VALUES (?, 1, ?, ?)
      ON CONFLICT(email) DO UPDATE SET consent_newsletter = 1, unsubscribed_at = NULL`
   ).bind(email, b.consent_source || "site", getIp(c)).run();
+  try { await sendNewsletterEmail(c.env, { email, source: b.consent_source || "site" }); } catch {}
   return c.json({ ok: true, email }, 201);
 });
 

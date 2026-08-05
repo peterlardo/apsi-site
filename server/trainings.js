@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { requireAuth } from "./middleware.js";
+import { sendTrainingRegistrationEmail } from "./email.js";
 
 const trainings = new Hono();
 
@@ -68,6 +69,7 @@ trainings.post("/registrations", async (c) => {
     `INSERT INTO training_registrations (training_id, training_title, full_name, email, phone, organization, profile, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(resolvedTrainingId, trainingTitle, fullName, email, phone, organization, profile, notes).run();
   const row = await c.env.DB.prepare("SELECT * FROM training_registrations WHERE id = ?").bind(meta.last_row_id).first();
+  try { await sendTrainingRegistrationEmail(c.env, { fullName, email, phone, organization, profile, trainingTitle, notes }); } catch {}
   return c.json(row, 201);
 });
 
